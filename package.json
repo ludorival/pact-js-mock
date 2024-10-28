@@ -1,6 +1,6 @@
 {
-  "name": "pact-mock-js",
-  "version": "2.0.0",
+  "name": "pact-js-mock",
+  "version": "0.0.1",
   "description": "A Library to build Pact interactions by leveraging existing mocks",
   "keywords": [
     "typescript",
@@ -13,7 +13,7 @@
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ludorival/pact-mock-js.git"
+    "url": "https://github.com/ludorival/pact-js-mock.git"
   },
   "exports": {
     "./core": {

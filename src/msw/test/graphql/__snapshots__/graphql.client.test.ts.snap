@@ -285,7 +285,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
   ],
   "metadata": {
     "client": {
-      "name": "pact-mock-js",
+      "name": "pact-js-mock",
     },
     "pactSpecification": {
       "version": "2.0.0",

@@ -1,7 +1,7 @@
 import axios, { Method } from 'axios'
 import { CreateTodoApi, FetchTodosApi, TodoByIdApi } from './Todo'
 
-const url = 'https://pact-mock-js.example.com/api'
+const url = 'https://pact-js-mock.example.com/api'
 
 async function rest<TData, TVariables = unknown>({
   method,

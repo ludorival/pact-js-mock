@@ -1,34 +1,34 @@
-<h1 align="center">Welcome to pact-mock-js.msw 👋</h1>
+<h1 align="center">Welcome to pact-js-mock.msw 👋</h1>
 <p>
-  <img alt="Version" src="https://img.shields.io/github/v/release/ludorival/pact-mock-js" />
-  <a href="https://github.com/ludorival/pact-mock-js/#readme" target="_blank">
+  <img alt="Version" src="https://img.shields.io/github/v/release/ludorival/pact-js-mock" />
+  <a href="https://github.com/ludorival/pact-js-mock/#readme" target="_blank">
     <img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" />
   </a>
-  <a href="https://github.com/ludorival/pact-mock-js/graphs/commit-activity" target="_blank">
+  <a href="https://github.com/ludorival/pact-js-mock/graphs/commit-activity" target="_blank">
     <img alt="Maintenance" src="https://img.shields.io/badge/Maintained%3F-yes-green.svg" />
   </a>
-  <a href="https://github.com/ludorival/pact-mock-js/blob/master/LICENSE" target="_blank">
-    <img alt="License: BSD--3--Clause" src="https://img.shields.io/github/license/ludorival/pact-mock-js" />
+  <a href="https://github.com/ludorival/pact-js-mock/blob/master/LICENSE" target="_blank">
+    <img alt="License: BSD--3--Clause" src="https://img.shields.io/github/license/ludorival/pact-js-mock" />
   </a>
 </p>
 
-# pact-mock-js
+# pact-js-mock
 
-`pact-mock-js` is a Node.js library that allows you to build [Pact](https://docs.pact.io/) contracts by leveraging your existings mocks. It could be used with your existing mocks defined with [msw](https://mswjs.io/) or [Cypress](https://www.cypress.io/). This library provides an easy way to generate contracts that can be used for testing and verifying API interactions between consumer and provider.
+`pact-js-mock` is a Node.js library that allows you to build [Pact](https://docs.pact.io/) contracts by leveraging your existings mocks. It could be used with your existing mocks defined with [msw](https://mswjs.io/) or [Cypress](https://www.cypress.io/). This library provides an easy way to generate contracts that can be used for testing and verifying API interactions between consumer and provider.
 
 ## Install
 
 ```sh
-yarn add -D pact-mock-js
+yarn add -D pact-js-mock
 ```
 
 ## Getting started with MSW
 
-Here is an example of how to use pact-mock-js with [MSW](https://mswjs.io/):
+Here is an example of how to use pact-js-mock with [MSW](https://mswjs.io/):
 
 ```js
 import { setupServer, rest } from 'msw/node'
-import { Pact } from 'pact-mock-js/msw'
+import { Pact } from 'pact-js-mock/msw'
 import { writeFile } from 'fs'
 
 const server = setupServer()
@@ -53,7 +53,7 @@ afterAll(() => {
   // Write the pact file wherever you want
   fs.writeFile(
     `pacts/${pact.name}.json`,
-    JSON.stringify(pact.generatePactFile())
+    JSON.stringify(pact.generatePactFile()),
   )
 })
 
@@ -74,7 +74,7 @@ it('get all movies', async () => {
           year: 2008,
         },
       ],
-    })
+    }),
   )
 
   server.use(mockMovies)
@@ -103,10 +103,10 @@ You can find more example to mock
 
 ## Getting started with Cypress
 
-Here is an example of how to use pact-mock-js with [Cypress](https://www.cypress.io/):
+Here is an example of how to use pact-js-mock with [Cypress](https://www.cypress.io/):
 
 ```js
-import { Pact } from 'pact-mock-js/cypress'
+import { Pact } from 'pact-js-mock/cypress'
 
 const server = setupServer()
 
@@ -144,7 +144,7 @@ it('get all movies', async () => {
           year: 2008,
         },
       ],
-    })
+    }),
   ).as('multipleMovies')
 
   // open the page to test
@@ -176,7 +176,7 @@ Give a ⭐️ if this project helped you!
 ## 📝 License
 
 Copyright © 2021 [Ludovic Dorival](https://github.com/ludorival).<br />
-This project is [BSD--3--Clause](https://github.com/ludorival/pact-mock-js/msw/blob/master/LICENSE) licensed.
+This project is [BSD--3--Clause](https://github.com/ludorival/pact-js-mock/msw/blob/master/LICENSE) licensed.
 
 ---
 
