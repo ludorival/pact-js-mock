@@ -95,7 +95,7 @@ exports[`PactV2 should record a Pact V2 Interactions  1`] = `
   ],
   "metadata": {
     "client": {
-      "name": "pact-mock-js",
+      "name": "pact-js-mock",
     },
     "pactSpecification": {
       "version": "2.0.0",
@@ -185,7 +185,7 @@ exports[`PactV3 should record a Pact V3 Interactions  1`] = `
   ],
   "metadata": {
     "client": {
-      "name": "pact-mock-js",
+      "name": "pact-js-mock",
     },
     "pactSpecification": {
       "version": "3.0.0",
@@ -299,7 +299,7 @@ exports[`PactV4 should record a Pact V4 Interactions  1`] = `
   ],
   "metadata": {
     "client": {
-      "name": "pact-mock-js",
+      "name": "pact-js-mock",
     },
     "pactSpecification": {
       "version": "4.0.0",

@@ -10,7 +10,7 @@
       "version": "2.0.0"
     },
     "client": {
-      "name": "pact-mock-js",
+      "name": "pact-js-mock",
       "version": "1.2.0"
     }
   },
@@ -23,14 +23,14 @@
       },
       "request": {
         "method": "GET",
-        "path": "https://pact-mock-js.example.com/api/todos",
+        "path": "https://pact-js-mock.example.com/api/todos",
         "headers": {},
         "body": "",
         "query": ""
       }
     },
     {
-      "description": "GET https://pact-mock-js.example.com/api/todos returns status 200",
+      "description": "GET https://pact-js-mock.example.com/api/todos returns status 200",
       "response": {
         "status": 200,
         "body": [
@@ -56,7 +56,7 @@
       },
       "request": {
         "method": "GET",
-        "path": "https://pact-mock-js.example.com/api/todos",
+        "path": "https://pact-js-mock.example.com/api/todos",
         "headers": {},
         "body": "",
         "query": ""
@@ -70,7 +70,7 @@
       },
       "request": {
         "method": "GET",
-        "path": "https://pact-mock-js.example.com/api/todos",
+        "path": "https://pact-js-mock.example.com/api/todos",
         "headers": {},
         "body": "",
         "query": ""
@@ -89,7 +89,7 @@
       },
       "request": {
         "method": "POST",
-        "path": "https://pact-mock-js.example.com/api/todos",
+        "path": "https://pact-js-mock.example.com/api/todos",
         "headers": {
           "content-type": "application/json"
         },
@@ -114,7 +114,7 @@
       },
       "request": {
         "method": "GET",
-        "path": "https://pact-mock-js.example.com/api/todos/1",
+        "path": "https://pact-js-mock.example.com/api/todos/1",
         "headers": {},
         "body": "",
         "query": ""
@@ -130,7 +130,7 @@
       },
       "request": {
         "method": "GET",
-        "path": "https://pact-mock-js.example.com/api/todos/1",
+        "path": "https://pact-js-mock.example.com/api/todos/1",
         "headers": {},
         "body": "",
         "query": ""

@@ -5758,9 +5758,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pact-mock-js@workspace:.":
+"pact-js-mock@workspace:.":
   version: 0.0.0-use.local
-  resolution: "pact-mock-js@workspace:."
+  resolution: "pact-js-mock@workspace:."
   dependencies:
     "@cypress/react": "npm:^8.0.2"
     "@types/jest": "npm:^29.5.13"
