@@ -16,6 +16,10 @@
     "url": "https://github.com/ludorival/pact-js-mock.git"
   },
   "exports": {
+    ".": {
+      "default": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
+    },
     "./core": {
       "default": "./dist/src/core/index.js",
       "types": "./dist/src/core/index.d.ts"
