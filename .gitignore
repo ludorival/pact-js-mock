@@ -1,7 +1,7 @@
 # Generated directories:
 .nyc_output/
 coverage/
-dist/
+lib/
 node_modules/
 
 # Project files:

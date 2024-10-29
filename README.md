@@ -28,7 +28,7 @@ Here is an example of how to use pact-js-mock with [MSW](https://mswjs.io/):
 
 ```js
 import { setupServer, rest } from 'msw/node'
-import { Pact } from 'pact-js-mock/msw'
+import { Pact } from 'pact-js-mock/lib/msw'
 import { writeFile } from 'fs'
 
 const server = setupServer()
@@ -106,7 +106,7 @@ You can find more example to mock
 Here is an example of how to use pact-js-mock with [Cypress](https://www.cypress.io/):
 
 ```js
-import { Pact } from 'pact-js-mock/cypress'
+import { Pact } from 'pact-js-mock/lib/cypress'
 
 const server = setupServer()
 

@@ -15,34 +15,16 @@
     "type": "git",
     "url": "https://github.com/ludorival/pact-js-mock.git"
   },
-  "exports": {
-    ".": {
-      "default": "./dist/src/index.js",
-      "types": "./dist/src/index.d.ts"
-    },
-    "./core": {
-      "default": "./dist/src/core/index.js",
-      "types": "./dist/src/core/index.d.ts"
-    },
-    "./msw": {
-      "default": "./dist/src/msw/index.js",
-      "types": "./dist/src/msw/index.d.ts"
-    },
-    "./cypress": {
-      "default": "./dist/src/cypress/index.js",
-      "types": "./dist/src/cypress/index.d.ts"
-    }
-  },
   "files": [
-    "dist"
+    "lib"
   ],
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "scripts": {
     "build": "npm run clean && npm run lint && tsc --build --verbose",
     "changelog": "conventional-changelog -p angular -u",
     "changelog:update": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md",
-    "clean": "(rm -r ./.nyc_output || true) && (rm -r ./coverage || true) && (rm -r dist || true)",
+    "clean": "(rm -r ./.nyc_output || true) && (rm -r ./coverage || true) && (rm -r lib || true)",
     "clean:all": "npm run clean && (rm -r ./node_modules || true)",
     "cover": "yarn test --coverage",
     "lint": "eslint . --fix",
