@@ -1,15 +1,12 @@
 {
-  "extends": [
-    "config:base"
-  ],
- "packageRules": [
+  "extends": ["config:recommended"],
+  "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
       "groupName": "Upgrade everything",
       "groupSlug": "upgrade-everything",
-      "matchPackagePatterns": ["*"],
-      "excludePackageNames": ["msw"],
-      "automerge": true
+      "automerge": true,
+      "matchPackageNames": ["*", "!msw"]
     }
   ]
 }
