@@ -208,3 +208,51 @@ describe('PactV4', () => {
     expect(omitVersion(pactFile)).toMatchSnapshot()
   })
 })
+
+describe('Deterministic Pact', () => {
+  // given
+  const pact = new Pact(
+    {
+      consumer: { name: 'consumer' },
+      provider: { name: 'provider' },
+      metadata: { pactSpecification: { version: '2.0.0' } },
+    },
+    {
+      deterministic: true,
+    },
+  )
+  const anInteraction = {
+    description: 'This is a description',
+    request: { method: 'POST', path: 'v1/todo', body: { name: 'Todo' } },
+    response: {
+      status: 200,
+      body: 'This is an interaction with a description',
+    },
+  } as PactV2.Interaction
+
+  beforeEach(() => {
+    pact.reset()
+  })
+  it('should not be able to record an interaction with same description but different request when deterministic option is set', () => {
+    // when
+    pact.record(anInteraction)
+    // then
+    expect(() =>
+      pact.record({
+        ...anInteraction,
+        request: { method: 'POST', path: 'v1/todo', body: { name: 'Todo 2' } },
+      }),
+    ).toThrow(
+      'The interaction `This is a description` already exists but with different content. It is recommended that the interaction stays deterministic.',
+    )
+  })
+
+  it('should be able to record same interactions multiple times', () => {
+    // when
+    pact.record(anInteraction)
+    pact.record(anInteraction)
+    pact.record(anInteraction)
+    // then
+    expect(pact.generatePactFile().interactions).toHaveLength(1)
+  })
+})
