@@ -67,9 +67,9 @@ export class Pact<P extends PactFile> extends BasePact<P> {
 }
 
 function toRequest(req: CyHttpMessages.IncomingHttpRequest): Request {
-  const parts = req.url.split('?')
-  const path = parts[0]
-  const query = parts.slice(1).join('?')
+  const url = new URL(req.url)
+  const path = url.pathname
+  const query = url.search
   const body: Body = req.body
 
   return {

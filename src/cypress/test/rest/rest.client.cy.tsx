@@ -28,11 +28,13 @@ after(() => {
   })
 })
 
-describe('To-Do list GraphQL API client', () => {
+describe('To-Do list Rest API client', () => {
   describe('fetchTodos', () => {
     it('should fetch all To-Do items', () => {
       // use multipleTodos handlers from contracts
-      cy.intercept('GET', `/api/todos`, multipleTodos).as('multipleTodos')
+      cy.intercept('GET', `/api/todos?all=true`, multipleTodos).as(
+        'multipleTodos',
+      )
 
       // Mount the TodoList to fetchTodos function and get the actual data
       mount(<TodoList {...props} />)
@@ -49,9 +51,11 @@ describe('To-Do list GraphQL API client', () => {
         return false // ignore
       })
       // use todosWillRaiseTechnicalFailure and emptyTodos handlers from contracts
-      cy.intercept('GET', '/api/todos', todosWillRaiseTechnicalFailure).as(
-        'todosWillRaiseTechnicalFailure',
-      )
+      cy.intercept(
+        'GET',
+        '/api/todos?all=true',
+        todosWillRaiseTechnicalFailure,
+      ).as('todosWillRaiseTechnicalFailure')
       // Mount the TodoList to fetchTodos function and get the actual data
       mount(<TodoList {...props} />)
 
@@ -60,7 +64,7 @@ describe('To-Do list GraphQL API client', () => {
         .its('statusCode')
         .should('be.equal', 500)
 
-      cy.intercept('GET', '/api/todos', emptyTodos).as('emptyTodos')
+      cy.intercept('GET', '/api/todos?all=true', emptyTodos).as('emptyTodos')
       // Reload the fetch
       cy.get('#reload').click()
 

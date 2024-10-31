@@ -54,7 +54,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
         "headers": {},
         "method": "GET",
         "path": "/api/todos",
-        "query": undefined,
+        "query": "all=true",
       },
       "response": {
         "body": [],
@@ -68,7 +68,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
         "headers": {},
         "method": "GET",
         "path": "/api/todos",
-        "query": undefined,
+        "query": "all=true",
       },
       "response": {
         "body": [
@@ -102,7 +102,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
         "headers": {},
         "method": "GET",
         "path": "/api/todos",
-        "query": undefined,
+        "query": "all=true",
       },
       "response": {
         "status": 500,

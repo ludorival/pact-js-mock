@@ -9,3 +9,5 @@ node_modules/
 pacts/*
 .yarn/*
 tsconfig.tsbuildinfo
+cypress/screenshots/
+cypress/videos/
