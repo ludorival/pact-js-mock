@@ -53,6 +53,10 @@ export class Pact<P extends PactFile> extends BasePact<P> {
     info: Info<TRequest>,
     initOptions?: HttpResponseInit,
   ): Promise<StrictResponse<TResponse>> {
+    if (!info.request)
+      throw new Error(
+        'Expected "info" to have a "request" attribute. This issue may be caused by an incorrect MSW version. Ensure you are using MSW version 2 or higher and that it’s correctly imported.',
+      )
     const toRecord = {
       ...interaction,
       request: await toRequest(info),

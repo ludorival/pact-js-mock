@@ -56,11 +56,12 @@ export class Pact<T extends PactFile = PactV2.PactFile> {
     } as InteractionFor<T, TResponse, TRequest>
     const existingInteraction = this.interactions[description]
     if (
+      this.options?.deterministic &&
       existingInteraction &&
       JSON.stringify(existingInteraction) !== JSON.stringify(interaction)
     ) {
-      console.warn(
-        `The interaction ${description} already exists but with different content. It is recommended that the interaction stays deterministic.`,
+      throw new Error(
+        `The interaction \`${description}\` already exists but with different content. It is recommended that the interaction stays deterministic.`,
       )
     }
     this.interactions[description] = interaction

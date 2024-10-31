@@ -11,7 +11,7 @@
     },
     "client": {
       "name": "pact-js-mock",
-      "version": "1.2.0"
+      "version": "0.0.4"
     }
   },
   "interactions": [
@@ -23,14 +23,14 @@
       },
       "request": {
         "method": "GET",
-        "path": "https://pact-js-mock.example.com/api/todos",
+        "path": "/api/todos",
         "headers": {},
         "body": "",
-        "query": ""
+        "query": "?all=true"
       }
     },
     {
-      "description": "GET https://pact-js-mock.example.com/api/todos returns status 200",
+      "description": "GET /api/todos returns status 200",
       "response": {
         "status": 200,
         "body": [
@@ -56,10 +56,10 @@
       },
       "request": {
         "method": "GET",
-        "path": "https://pact-js-mock.example.com/api/todos",
+        "path": "/api/todos",
         "headers": {},
         "body": "",
-        "query": ""
+        "query": "?all=true"
       }
     },
     {
@@ -70,10 +70,10 @@
       },
       "request": {
         "method": "GET",
-        "path": "https://pact-js-mock.example.com/api/todos",
+        "path": "/api/todos",
         "headers": {},
         "body": "",
-        "query": ""
+        "query": "?all=true"
       }
     },
     {
@@ -89,7 +89,7 @@
       },
       "request": {
         "method": "POST",
-        "path": "https://pact-js-mock.example.com/api/todos",
+        "path": "/api/todos",
         "headers": {
           "content-type": "application/json"
         },
@@ -114,7 +114,7 @@
       },
       "request": {
         "method": "GET",
-        "path": "https://pact-js-mock.example.com/api/todos/1",
+        "path": "/api/todos/1",
         "headers": {},
         "body": "",
         "query": ""
@@ -130,7 +130,7 @@
       },
       "request": {
         "method": "GET",
-        "path": "https://pact-js-mock.example.com/api/todos/1",
+        "path": "/api/todos/1",
         "headers": {},
         "body": "",
         "query": ""

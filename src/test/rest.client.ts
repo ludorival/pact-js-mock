@@ -22,7 +22,7 @@ async function rest<TData, TVariables = unknown>({
 }
 // define a function to fetch all To-Do items
 export const fetchTodos: FetchTodosApi = () =>
-  rest({ method: 'get', path: '/todos' })
+  rest({ method: 'get', path: '/todos?all=true' })
 
 // define a function to fetch all To-Do items
 export const todoById: TodoByIdApi = (id) =>
