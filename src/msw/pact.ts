@@ -1,5 +1,5 @@
 import { omit } from 'lodash'
-import type {
+import {
   DefaultBodyType,
   HttpResponse,
   HttpResponseInit,

@@ -11,7 +11,7 @@
     },
     "client": {
       "name": "pact-js-mock",
-      "version": "1.1.1"
+      "version": "0.0.4"
     }
   },
   "interactions": [
@@ -27,7 +27,7 @@
       },
       "request": {
         "method": "POST",
-        "path": "https://pact-js-mock.example.com/graphql",
+        "path": "/graphql",
         "headers": {
           "content-type": "application/json"
         },
@@ -46,7 +46,7 @@
       },
       "request": {
         "method": "POST",
-        "path": "https://pact-js-mock.example.com/graphql",
+        "path": "/graphql",
         "headers": {
           "content-type": "application/json"
         },
@@ -57,7 +57,7 @@
       }
     },
     {
-      "description": "POST https://pact-js-mock.example.com/graphql returns status 200",
+      "description": "POST /graphql returns status 200",
       "response": {
         "status": 200,
         "body": {
@@ -87,7 +87,7 @@
       },
       "request": {
         "method": "POST",
-        "path": "https://pact-js-mock.example.com/graphql",
+        "path": "/graphql",
         "headers": {
           "content-type": "application/json"
         },
@@ -114,7 +114,7 @@
       },
       "request": {
         "method": "POST",
-        "path": "https://pact-js-mock.example.com/graphql",
+        "path": "/graphql",
         "headers": {
           "content-type": "application/json"
         },
@@ -146,7 +146,7 @@
       },
       "request": {
         "method": "POST",
-        "path": "https://pact-js-mock.example.com/graphql",
+        "path": "/graphql",
         "headers": {
           "content-type": "application/json"
         },
@@ -173,7 +173,7 @@
       },
       "request": {
         "method": "POST",
-        "path": "https://pact-js-mock.example.com/graphql",
+        "path": "/graphql",
         "headers": {
           "content-type": "application/json"
         },
