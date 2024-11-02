@@ -1,18 +1,17 @@
 import { readPact } from '../utils'
-let firstRead = true
-export default (on: Cypress.PluginEvents, config: Cypress.PluginConfigOptions) => {
+const checkRead: Record<string, boolean> = {}
+export default (
+  on: Cypress.PluginEvents,
+  config: Cypress.PluginConfigOptions,
+) => {
   on('task', {
     readPact(fileName: string) {
-      if (firstRead) {
-        firstRead = false
+      if (!checkRead[fileName]) {
+        checkRead[fileName] = true
         return null
       }
       return readPact(fileName)
     },
-  })
-
-  on('before:run', () => {
-    firstRead = true
   })
 
   return config // Return the updated config
