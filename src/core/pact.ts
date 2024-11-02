@@ -20,7 +20,7 @@ function pactName<P extends PactFile>(pact: InputPact<P>) {
   return `${pact.consumer.name}-${pact.provider.name}`
 }
 export class Pact<T extends PactFile = PactV2.PactFile> {
-  private interactions: Record<string, InteractionFor<T>> = {}
+  private interactions: InteractionFor<T>[] = []
   constructor(
     private pact: InputPact<T>,
     private options?: Options,
@@ -36,6 +36,10 @@ export class Pact<T extends PactFile = PactV2.PactFile> {
   }
   public get version(): Version {
     return this.pact.metadata?.pactSpecification?.version || '2.0.0'
+  }
+
+  public get fileName(): string {
+    return `${this.options?.outputDir || 'pacts'}/${this.name}.json`
   }
 
   record<TResponse = unknown, TRequest = unknown>(
@@ -54,7 +58,9 @@ export class Pact<T extends PactFile = PactV2.PactFile> {
       ...input,
       request: { ...this.toRequest(request) },
     } as InteractionFor<T, TResponse, TRequest>
-    const existingInteraction = this.interactions[description]
+    const existingInteraction = this.interactions.find(
+      (i) => i.description === description,
+    )
     if (
       this.options?.deterministic &&
       existingInteraction &&
@@ -64,7 +70,7 @@ export class Pact<T extends PactFile = PactV2.PactFile> {
         `The interaction \`${description}\` already exists but with different content. It is recommended that the interaction stays deterministic.`,
       )
     }
-    this.interactions[description] = interaction
+    this.interactions.push(interaction)
   }
 
   private toRequest(req: Request): Request {
@@ -80,12 +86,9 @@ export class Pact<T extends PactFile = PactV2.PactFile> {
   }
 
   generatePactFile(): T {
-    const interactions = Object.keys(this.interactions)
-      .map((d) => this.interactions[d])
-      .sort((a, b) => a.description.localeCompare(b.description))
     const pactFile = {
       ...(this.pact as T),
-      interactions,
+      interactions: this.interactions,
       metadata: {
         ...this.pact.metadata,
         client: { name: packageJson.name, version: packageJson.version },
@@ -94,8 +97,8 @@ export class Pact<T extends PactFile = PactV2.PactFile> {
     return pactFile
   }
 
-  async reset() {
-    this.interactions = {}
+  async reset(pactFile: T | null = null) {
+    this.interactions = (pactFile?.interactions || []) as InteractionFor<T>[]
   }
 }
 

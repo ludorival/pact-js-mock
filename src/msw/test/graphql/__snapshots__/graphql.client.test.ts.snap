@@ -48,67 +48,6 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
   },
   "interactions": [
     {
-      "description": "empty todo list",
-      "request": {
-        "body": {
-          "cookies": {},
-          "operationName": "todos",
-          "query": "
-    query todos {
-      todos {
-        id
-        title
-        description
-        completed
-      }
-    }
-  ",
-          "variables": {},
-        },
-        "headers": {
-          "content-type": "application/json",
-        },
-        "method": "POST",
-        "path": "/graphql",
-        "query": undefined,
-      },
-      "response": {
-        "body": {
-          "data": {
-            "todos": [],
-          },
-        },
-        "status": 200,
-      },
-    },
-    {
-      "description": "graphql api returns a 500 http error",
-      "providerState": "will return a 500 http error",
-      "request": {
-        "body": {
-          "query": "
-    query todos {
-      todos {
-        id
-        title
-        description
-        completed
-      }
-    }
-  ",
-        },
-        "headers": {
-          "content-type": "application/json",
-        },
-        "method": "POST",
-        "path": "/graphql",
-        "query": undefined,
-      },
-      "response": {
-        "status": 500,
-      },
-    },
-    {
       "description": "POST /graphql returns status 200",
       "request": {
         "body": {
@@ -156,6 +95,67 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
                 "title": "Call plumber",
               },
             ],
+          },
+        },
+        "status": 200,
+      },
+    },
+    {
+      "description": "graphql api returns a 500 http error",
+      "providerState": "will return a 500 http error",
+      "request": {
+        "body": {
+          "query": "
+    query todos {
+      todos {
+        id
+        title
+        description
+        completed
+      }
+    }
+  ",
+        },
+        "headers": {
+          "content-type": "application/json",
+        },
+        "method": "POST",
+        "path": "/graphql",
+        "query": undefined,
+      },
+      "response": {
+        "status": 500,
+      },
+    },
+    {
+      "description": "empty todo list",
+      "request": {
+        "body": {
+          "cookies": {},
+          "operationName": "todos",
+          "query": "
+    query todos {
+      todos {
+        id
+        title
+        description
+        completed
+      }
+    }
+  ",
+          "variables": {},
+        },
+        "headers": {
+          "content-type": "application/json",
+        },
+        "method": "POST",
+        "path": "/graphql",
+        "query": undefined,
+      },
+      "response": {
+        "body": {
+          "data": {
+            "todos": [],
           },
         },
         "status": 200,

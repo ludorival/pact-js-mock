@@ -1,6 +1,16 @@
 import { omitVersion } from '../test/utils'
 import { PactV2, PactV3, PactV4 } from '../types'
+import { deletePact, reloadPact, writePact } from '../utils'
 import { Pact } from './pact'
+
+const anInteraction = {
+  description: 'This is a description',
+  request: { method: 'POST', path: 'v1/todo', body: { name: 'Todo' } },
+  response: {
+    status: 200,
+    body: 'This is an interaction with a description',
+  },
+} as PactV2.Interaction
 describe('PactV2', () => {
   const pact = new Pact<PactV2.PactFile>(
     {
@@ -22,17 +32,6 @@ describe('PactV2', () => {
   })
 
   it('should record a Pact V2 Interactions ', () => {
-    // given
-
-    const anInteraction = {
-      description: 'This is a description',
-      request: { method: 'POST', path: 'v1/todo', body: { name: 'Todo' } },
-      response: {
-        status: 200,
-        body: 'This is an interaction with a description',
-      },
-    } as PactV2.Interaction
-
     // when
     pact.record({
       request: { method: 'GET', path: 'v1/todo' },
@@ -221,14 +220,6 @@ describe('Deterministic Pact', () => {
       deterministic: true,
     },
   )
-  const anInteraction = {
-    description: 'This is a description',
-    request: { method: 'POST', path: 'v1/todo', body: { name: 'Todo' } },
-    response: {
-      status: 200,
-      body: 'This is an interaction with a description',
-    },
-  } as PactV2.Interaction
 
   beforeEach(() => {
     pact.reset()
@@ -253,6 +244,42 @@ describe('Deterministic Pact', () => {
     pact.record(anInteraction)
     pact.record(anInteraction)
     // then
+    expect(pact.generatePactFile().interactions).toHaveLength(3)
+  })
+})
+
+describe('Reload pacts', () => {
+  const pact = new Pact(
+    {
+      consumer: { name: 'consumer' },
+      provider: { name: 'provider' },
+      metadata: { pactSpecification: { version: '2.0.0' } },
+    },
+    {
+      outputDir: 'pacts/test-reload',
+    },
+  )
+  beforeAll(() => {
+    deletePact(pact)
+  })
+  beforeEach(() => {
+    reloadPact(pact)
+  })
+
+  afterEach(() => {
+    writePact(pact)
+  })
+
+  it('should record an interaction', () => {
+    pact.record(anInteraction)
     expect(pact.generatePactFile().interactions).toHaveLength(1)
+  })
+
+  it('should keep the previous interaction', () => {
+    pact.record({
+      ...anInteraction,
+      description: 'This is another description',
+    })
+    expect(pact.generatePactFile().interactions).toHaveLength(2)
   })
 })

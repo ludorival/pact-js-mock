@@ -7,20 +7,6 @@ exports[`PactV2 should record a Pact V2 Interactions  1`] = `
   },
   "interactions": [
     {
-      "description": "Description with special character @/"". $",
-      "request": {
-        "body": {
-          "name": "Todo",
-        },
-        "method": "POST",
-        "path": "v1/todo",
-      },
-      "response": {
-        "body": "This is an interaction with a description",
-        "status": 200,
-      },
-    },
-    {
       "description": "GET v1/todo returns status 200",
       "request": {
         "method": "GET",
@@ -48,6 +34,20 @@ exports[`PactV2 should record a Pact V2 Interactions  1`] = `
     {
       "description": "This is a same description",
       "request": {
+        "body": {
+          "name": "Todo",
+        },
+        "method": "POST",
+        "path": "v1/todo",
+      },
+      "response": {
+        "body": "This is an interaction with a description",
+        "status": 200,
+      },
+    },
+    {
+      "description": "This is a same description",
+      "request": {
         "method": "GET",
         "path": "v1/todo",
       },
@@ -57,16 +57,13 @@ exports[`PactV2 should record a Pact V2 Interactions  1`] = `
       },
     },
     {
-      "description": "This is an interaction with headers and base path",
+      "description": "Description with special character @/"". $",
       "request": {
         "body": {
           "name": "Todo",
         },
-        "headers": {
-          "content-type": "application/json",
-        },
         "method": "POST",
-        "path": "/v1/todo",
+        "path": "v1/todo",
       },
       "response": {
         "body": "This is an interaction with a description",
@@ -86,6 +83,23 @@ exports[`PactV2 should record a Pact V2 Interactions  1`] = `
         },
         "method": "POST",
         "path": "v1/todo",
+      },
+      "response": {
+        "body": "This is an interaction with a description",
+        "status": 200,
+      },
+    },
+    {
+      "description": "This is an interaction with headers and base path",
+      "request": {
+        "body": {
+          "name": "Todo",
+        },
+        "headers": {
+          "content-type": "application/json",
+        },
+        "method": "POST",
+        "path": "/v1/todo",
       },
       "response": {
         "body": "This is an interaction with a description",
@@ -114,20 +128,6 @@ exports[`PactV3 should record a Pact V3 Interactions  1`] = `
   },
   "interactions": [
     {
-      "description": "Description with special character @/"". $",
-      "request": {
-        "body": {
-          "name": "Todo",
-        },
-        "method": "POST",
-        "path": "v1/todo",
-      },
-      "response": {
-        "body": "This is an interaction with a description",
-        "status": 200,
-      },
-    },
-    {
       "description": "GET v1/todo returns status 200",
       "request": {
         "method": "GET",
@@ -155,7 +155,35 @@ exports[`PactV3 should record a Pact V3 Interactions  1`] = `
     {
       "description": "This is a same description",
       "request": {
+        "body": {
+          "name": "Todo",
+        },
+        "method": "POST",
+        "path": "v1/todo",
+      },
+      "response": {
+        "body": "This is an interaction with a description",
+        "status": 200,
+      },
+    },
+    {
+      "description": "This is a same description",
+      "request": {
         "method": "GET",
+        "path": "v1/todo",
+      },
+      "response": {
+        "body": "This is an interaction with a description",
+        "status": 200,
+      },
+    },
+    {
+      "description": "Description with special character @/"". $",
+      "request": {
+        "body": {
+          "name": "Todo",
+        },
+        "method": "POST",
         "path": "v1/todo",
       },
       "response": {
@@ -204,26 +232,6 @@ exports[`PactV4 should record a Pact V4 Interactions  1`] = `
   },
   "interactions": [
     {
-      "description": "Description with special character @/"". $",
-      "request": {
-        "body": {
-          "content": {
-            "name": "Todo",
-          },
-          "contentType": "application/json",
-        },
-        "method": "POST",
-        "path": "v1/todo",
-      },
-      "response": {
-        "body": {
-          "content": "This is an interaction with a description",
-          "contentType": "application/json",
-        },
-      },
-      "type": "Synchronous/HTTP",
-    },
-    {
       "description": "GET v1/todo returns status 200",
       "request": {
         "method": "GET",
@@ -260,7 +268,47 @@ exports[`PactV4 should record a Pact V4 Interactions  1`] = `
     {
       "description": "This is a same description",
       "request": {
+        "body": {
+          "content": {
+            "name": "Todo",
+          },
+          "contentType": "application/json",
+        },
+        "method": "POST",
+        "path": "v1/todo",
+      },
+      "response": {
+        "body": {
+          "content": "This is an interaction with a description",
+          "contentType": "application/json",
+        },
+      },
+      "type": "Synchronous/HTTP",
+    },
+    {
+      "description": "This is a same description",
+      "request": {
         "method": "GET",
+        "path": "v1/todo",
+      },
+      "response": {
+        "body": {
+          "content": "This is an interaction with a description",
+          "contentType": "application/json",
+        },
+      },
+      "type": "Synchronous/HTTP",
+    },
+    {
+      "description": "Description with special character @/"". $",
+      "request": {
+        "body": {
+          "content": {
+            "name": "Todo",
+          },
+          "contentType": "application/json",
+        },
+        "method": "POST",
         "path": "v1/todo",
       },
       "response": {

@@ -45,6 +45,7 @@ export type Options = {
   headersConfig?: HeadersConfig
   basePath?: string
   deterministic?: boolean
+  outputDir?: string
 }
 
 export type HeadersConfig = {

@@ -1,3 +1,5 @@
+/// <reference path="../../commands.d.ts" />
+
 import { mount } from '@cypress/react'
 import * as props from '../../../test/rest.client'
 import CreateTodo from '../CreateTodo'
@@ -15,17 +17,11 @@ import {
 import { omitVersion } from '../../../test/utils'
 
 before(() => {
-  pact.reset()
+  cy.reloadPact(pact)
 })
 
 after(() => {
-  const pactFile = pact.generatePactFile()
-  cy.writeFile(`pacts/${pact.name}.json`, pactFile)
-  cy.fixture('test-consumer-rest-provider.json').then((expectedPact) => {
-    expect(omitVersion(pactFile)).to.deep.equal(
-      omitVersion(expectedPact, false),
-    )
-  })
+  cy.writePact(pact)
 })
 
 describe('To-Do list Rest API client', () => {
@@ -129,6 +125,15 @@ describe('To-Do list Rest API client', () => {
         .its('response')
         .its('statusCode')
         .should('be.equal', 404)
+    })
+  })
+
+  it('the generated pact file should match with the snapshot', () => {
+    const pactFile = pact.generatePactFile()
+    cy.fixture('test-consumer-rest-provider.json').then((expectedPact) => {
+      expect(omitVersion(pactFile)).to.deep.equal(
+        omitVersion(expectedPact, false),
+      )
     })
   })
 })

@@ -26,7 +26,7 @@ afterAll(() => {
   server.close()
 })
 
-describe('To-Do list GraphQL API client', () => {
+describe('To-Do list Rest API client', () => {
   describe('fetchTodos', () => {
     it('should fetch all To-Do items', async () => {
       // use multipleTodos handlers from contracts
