@@ -1,5 +1,3 @@
-/// <reference path="../../commands.d.ts" />
-
 import { mount } from '@cypress/react'
 import * as props from '../../../test/rest.client'
 import CreateTodo from '../CreateTodo'

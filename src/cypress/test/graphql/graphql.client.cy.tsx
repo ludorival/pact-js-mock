@@ -1,5 +1,3 @@
-/// <reference path="../../commands.d.ts" />
-
 import React from 'react'
 import { mount } from '@cypress/react'
 import * as props from '../../../test/graphql.client'
