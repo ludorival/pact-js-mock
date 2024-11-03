@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type from 'cypress'
 import { Pact } from '../core'
 import { PactFile } from '../types'
