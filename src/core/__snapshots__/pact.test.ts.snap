@@ -46,17 +46,6 @@ exports[`PactV2 should record a Pact V2 Interactions  1`] = `
       },
     },
     {
-      "description": "This is a same description",
-      "request": {
-        "method": "GET",
-        "path": "v1/todo",
-      },
-      "response": {
-        "body": "This is an interaction with a description",
-        "status": 200,
-      },
-    },
-    {
       "description": "Description with special character @/"". $",
       "request": {
         "body": {
@@ -159,17 +148,6 @@ exports[`PactV3 should record a Pact V3 Interactions  1`] = `
           "name": "Todo",
         },
         "method": "POST",
-        "path": "v1/todo",
-      },
-      "response": {
-        "body": "This is an interaction with a description",
-        "status": 200,
-      },
-    },
-    {
-      "description": "This is a same description",
-      "request": {
-        "method": "GET",
         "path": "v1/todo",
       },
       "response": {
@@ -286,20 +264,6 @@ exports[`PactV4 should record a Pact V4 Interactions  1`] = `
       "type": "Synchronous/HTTP",
     },
     {
-      "description": "This is a same description",
-      "request": {
-        "method": "GET",
-        "path": "v1/todo",
-      },
-      "response": {
-        "body": {
-          "content": "This is an interaction with a description",
-          "contentType": "application/json",
-        },
-      },
-      "type": "Synchronous/HTTP",
-    },
-    {
       "description": "Description with special character @/"". $",
       "request": {
         "body": {
@@ -341,6 +305,24 @@ exports[`PactV4 should record a Pact V4 Interactions  1`] = `
           "content": "This is an interaction with a description",
           "contentType": "application/json",
         },
+      },
+      "type": "Synchronous/HTTP",
+    },
+    {
+      "description": "This is an interaction with undefined body",
+      "request": {
+        "body": {
+          "content": {
+            "name": "Todo",
+          },
+          "contentType": "application/json",
+        },
+        "method": "POST",
+        "path": "v1/todo",
+      },
+      "response": {
+        "body": undefined,
+        "status": 403,
       },
       "type": "Synchronous/HTTP",
     },

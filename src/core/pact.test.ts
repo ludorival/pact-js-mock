@@ -202,6 +202,14 @@ describe('PactV4', () => {
         matchingRules: { body: { match: 'type' } },
       },
     })
+    pact.record({
+      ...anInteraction,
+      description: 'This is an interaction with undefined body',
+      response: {
+        status: 403,
+        body: undefined,
+      },
+    })
 
     const pactFile = pact.generatePactFile()
     expect(omitVersion(pactFile)).toMatchSnapshot()
@@ -244,7 +252,7 @@ describe('Deterministic Pact', () => {
     pact.record(anInteraction)
     pact.record(anInteraction)
     // then
-    expect(pact.generatePactFile().interactions).toHaveLength(3)
+    expect(pact.generatePactFile().interactions).toHaveLength(1)
   })
 })
 
