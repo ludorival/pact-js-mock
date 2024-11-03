@@ -1,4 +1,4 @@
-import 'cypress'
+import type from 'cypress'
 import { Pact } from '../core'
 import { PactFile } from '../types'
 
