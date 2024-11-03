@@ -112,6 +112,25 @@ You can find more example to mock
 
 Here is an example of how to use pact-js-mock with [Cypress](https://www.cypress.io/):
 
+### Setup Pact
+
+Write a file named `pact.js` for example
+
+```js
+import { Pact } from 'pact-js-mock/lib/cypress'
+
+export const pact = new Pact(
+  {
+    consumer: { name: 'test-consumer' },
+    provider: { name: 'rest-provider' },
+    metadata: { pactSpecification: { version: '2.0.0' } },
+  },
+  {
+    outputDir: 'pacts', // the pact is written by default to pacts folder
+  },
+)
+```
+
 ### Setup Cypress commands
 
 Two Cypress functions are available with this module `cy.reloadPact()` and `cy.writePact()`, import the module `pact-js-mock/lib/cypress/commands` in the file `cypress/support/commands.(js|ts)`
@@ -119,6 +138,16 @@ Two Cypress functions are available with this module `cy.reloadPact()` and `cy.w
 ```js
 // cypress/support/commands.js
 import 'pact-js-mock/lib/cypress/commands'
+
+before(() => {
+  // To persist recorded interaction between each tests, add this
+  cy.reloadPact(pact)
+})
+
+after(() => {
+  // Write the pact file after each Cypress test
+  cy.writePact(pact)
+})
 ```
 
 ### Setup Cypress plugin
@@ -139,29 +168,6 @@ module.exports = (on, config) => {
 ### Write a sample test
 
 ```js
-import { Pact } from 'pact-js-mock/lib/cypress'
-
-const server = setupServer()
-
-const pact = new Pact(
-  {
-    consumer: { name: 'test-consumer' },
-    provider: { name: 'rest-provider' },
-    metadata: { pactSpecification: { version: '2.0.0' } },
-  },
-  {
-    outputDir: 'pacts', // the pact is written by default to pacts folder
-  },
-)
-
-before(() => {
-  cy.reloadPact(pact)
-})
-
-after(() => {
-  cy.writePact(pact)
-})
-
 it('get all movies', async () => {
   // intercept and mock the movies response while record the interaction
   cy.intercept(
