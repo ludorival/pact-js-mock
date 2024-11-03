@@ -1,0 +1,47 @@
+{
+  "consumer": {
+    "name": "consumer"
+  },
+  "provider": {
+    "name": "provider"
+  },
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    },
+    "client": {
+      "name": "pact-js-mock",
+      "version": "0.2.0"
+    }
+  },
+  "interactions": [
+    {
+      "description": "This is a description",
+      "request": {
+        "method": "POST",
+        "path": "v1/todo",
+        "body": {
+          "name": "Todo"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "This is an interaction with a description"
+      }
+    },
+    {
+      "description": "This is another description",
+      "request": {
+        "method": "POST",
+        "path": "v1/todo",
+        "body": {
+          "name": "Todo"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "This is an interaction with a description"
+      }
+    }
+  ]
+}

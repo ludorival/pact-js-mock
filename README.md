@@ -29,32 +29,39 @@ Here is an example of how to use pact-js-mock with [MSW](https://mswjs.io/):
 ```js
 import { setupServer, rest } from 'msw/node'
 import { Pact } from 'pact-js-mock/lib/msw'
+
+import { reloadPact, deletePact, writePact } from 'pact-js-mock/lib/utils'
 import { writeFile } from 'fs'
 
 const server = setupServer()
 
-const pact = new Pact({
-  consumer: { name: 'test-consumer' },
-  provider: { name: 'rest-provider' },
-  metadata: { pactSpecification: { version: '2.0.0' } },
-})
+const pact = new Pact(
+  {
+    consumer: { name: 'test-consumer' },
+    provider: { name: 'rest-provider' },
+    metadata: { pactSpecification: { version: '2.0.0' } },
+  },
+  {
+    outputDir: 'pacts', // the pact is written by default to pacts folder
+  },
+)
 
 beforeAll(() => {
   server.listen()
-  pact.reset()
+  deletePact(pact)
+})
+
+beforeEach(() => {
+  reloadPact(pact)
 })
 
 afterEach(() => {
   server.resetHandlers()
+  writePact(pact)
 })
 
 afterAll(() => {
   server.close()
-  // Write the pact file wherever you want
-  fs.writeFile(
-    `pacts/${pact.name}.json`,
-    JSON.stringify(pact.generatePactFile()),
-  )
 })
 
 it('get all movies', async () => {
@@ -105,24 +112,54 @@ You can find more example to mock
 
 Here is an example of how to use pact-js-mock with [Cypress](https://www.cypress.io/):
 
+### Setup Cypress commands
+
+Two Cypress functions are available with this module `cy.reloadPact()` and `cy.writePact()`, import the module `pact-js-mock/lib/cypress/commands` in the file `cypress/support/commands.(js|ts)`
+
+```js
+// cypress/support/commands.js
+import 'pact-js-mock/lib/cypress/commands'
+```
+
+### Setup Cypress plugin
+
+Import this in the `cypress/plugins/index.js`
+
+```js
+// cypress/plugins/index.js
+
+import pactPlugin from 'pact-js-mock/lib/cypress/plugin'
+
+module.exports = (on, config) => {
+  config = pactPlugin(on, config)
+  return config
+}
+```
+
+### Write a sample test
+
 ```js
 import { Pact } from 'pact-js-mock/lib/cypress'
 
 const server = setupServer()
 
-const pact = new Pact({
-  consumer: { name: 'test-consumer' },
-  provider: { name: 'rest-provider' },
-  metadata: { pactSpecification: { version: '2.0.0' } },
-})
+const pact = new Pact(
+  {
+    consumer: { name: 'test-consumer' },
+    provider: { name: 'rest-provider' },
+    metadata: { pactSpecification: { version: '2.0.0' } },
+  },
+  {
+    outputDir: 'pacts', // the pact is written by default to pacts folder
+  },
+)
 
 before(() => {
-  pact.reset()
+  cy.reloadPact(pact)
 })
 
 after(() => {
-  // Write the pact file wherever you want
-  cy.writeFile(`pacts/${pact.name}.json`, pact.generatePactFile())
+  cy.writePact(pact)
 })
 
 it('get all movies', async () => {

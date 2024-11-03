@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`To-Do list GraphQL API client createTodo should create a new To-Do item 1`] = `
+exports[`To-Do list Rest API client createTodo should create a new To-Do item 1`] = `
 {
   "completed": false,
   "description": "Milk, bread, eggs, cheese",
@@ -9,7 +9,7 @@ exports[`To-Do list GraphQL API client createTodo should create a new To-Do item
 }
 `;
 
-exports[`To-Do list GraphQL API client fetchTodos should fetch all To-Do items 1`] = `
+exports[`To-Do list Rest API client fetchTodos should fetch all To-Do items 1`] = `
 [
   {
     "completed": false,
@@ -32,7 +32,7 @@ exports[`To-Do list GraphQL API client fetchTodos should fetch all To-Do items 1
 ]
 `;
 
-exports[`To-Do list GraphQL API client todoById should get a todo by its id 1`] = `
+exports[`To-Do list Rest API client todoById should get a todo by its id 1`] = `
 {
   "completed": false,
   "description": "Milk, bread, eggs, cheese",
@@ -47,20 +47,6 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
     "name": "test-consumer",
   },
   "interactions": [
-    {
-      "description": "empty todo list",
-      "request": {
-        "body": null,
-        "headers": {},
-        "method": "GET",
-        "path": "/api/todos",
-        "query": "all=true",
-      },
-      "response": {
-        "body": [],
-        "status": 200,
-      },
-    },
     {
       "description": "GET /api/todos returns status 200",
       "request": {
@@ -106,6 +92,20 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
       },
       "response": {
         "status": 500,
+      },
+    },
+    {
+      "description": "empty todo list",
+      "request": {
+        "body": null,
+        "headers": {},
+        "method": "GET",
+        "path": "/api/todos",
+        "query": "all=true",
+      },
+      "response": {
+        "body": [],
+        "status": 200,
       },
     },
     {

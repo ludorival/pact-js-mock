@@ -66,10 +66,10 @@
     "skipLibCheck": true,                     /* Skip type checking of declaration files. */
     "forceConsistentCasingInFileNames": true,  /* Disallow inconsistently-cased references to the same file. */
   },
-  "include": ["src/**/*.ts", "src/cypress/test/rest/rest.client.cy.tsx", "src/cypress/test/graphql/graphql.client.cy.tsx"],    
+  "include": ["src/**/*.ts"],    
   "exclude": [
     "node_modules",
-    "dist",
+    "lib",
     "**/*.test.ts",  // Exclure les fichiers de test Jest
     "**/*.cy.ts"     // Exclure les fichiers de test Cypress
   ]}

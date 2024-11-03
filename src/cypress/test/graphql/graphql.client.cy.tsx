@@ -16,17 +16,11 @@ import {
 import { omitVersion } from '../../../test/utils'
 
 before(() => {
-  pact.reset()
+  cy.reloadPact(pact)
 })
 
 after(() => {
-  const pactFile = pact.generatePactFile()
-  cy.writeFile(`pacts/${pact.name}.json`, pactFile)
-  cy.fixture('test-consumer-graphql-provider.json').then((expectedPact) => {
-    expect(omitVersion(pactFile)).to.deep.equal(
-      omitVersion(expectedPact, false),
-    )
-  })
+  cy.writePact(pact)
 })
 
 describe('To-Do list GraphQL API client', () => {
@@ -129,6 +123,14 @@ describe('To-Do list GraphQL API client', () => {
         .its('response')
         .its('body.errors')
         .should('deep.equal', [{ message: 'The todo item 1 is not found' }])
+    })
+  })
+  it('the generated pact file should match with the snapshot', () => {
+    const pactFile = pact.generatePactFile()
+    cy.fixture('test-consumer-graphql-provider.json').then((expectedPact) => {
+      expect(omitVersion(pactFile)).to.deep.equal(
+        omitVersion(expectedPact, false),
+      )
     })
   })
 })
