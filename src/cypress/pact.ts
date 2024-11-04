@@ -8,18 +8,13 @@ import {
   InputPact,
   InteractionFor,
   MinimalInteraction,
+  Options,
   PactFile,
   PactV2,
   PactV3,
   PactV4,
   ToRecordInteraction,
 } from '../types'
-import { HeadersConfig } from './types'
-
-type Options = {
-  headersConfig?: HeadersConfig
-  basePath?: string
-}
 
 type Request = PactV2.Request | PactV3.Request | PactV4.Request
 export class Pact<P extends PactFile> extends BasePact<P> {
