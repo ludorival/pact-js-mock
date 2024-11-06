@@ -375,7 +375,7 @@
   resolved "https://registry.yarnpkg.com/@cypress/react/-/react-8.0.2.tgz#ae6651f61b2182f4485a21300f320c3efa3cb9ce"
   integrity sha512-7TgXXEeJ/GnGiIQhO8mAfkyychyMv5hNyISV3ti/vceriTI0uGtbjwRqLQhuVgOSHLtboUZUIoRlR6BkgIdVVg==
 
-"@cypress/request@^3.0.4":
+"@cypress/request@^3.0.6":
   version "3.0.6"
   resolved "https://registry.yarnpkg.com/@cypress/request/-/request-3.0.6.tgz#f5580add6acee0e183b4d4e07eff4f31327ae12b"
   integrity sha512-fi0eVdCOtKu5Ed6+E8mYxUF6ZTFJDZvHogCBelM0xVXmrDEkyM22gRArQzq1YcHPm1V47Vf/iAD+WgVdUlJCGg==
@@ -1168,14 +1168,7 @@
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.17.13.tgz#786e2d67cfd95e32862143abe7463a7f90c300eb"
   integrity sha512-lfx+dftrEZcdBPczf9d0Qv0x+j/rfNCMuC6OcfXmO8gkfeNAY88PgKUbvG56whcN23gc27yenwF6oJZXGFpYxg==
 
-"@types/node@*":
-  version "22.8.7"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.8.7.tgz#04ab7a073d95b4a6ee899f235d43f3c320a976f4"
-  integrity sha512-LidcG+2UeYIWcMuMUpBKOnryBWG/rnmOHQR5apjn8myTQcx3rinFRn7DcIFhMnS0PPFSC6OafdIKEad0lj6U0Q==
-  dependencies:
-    undici-types "~6.19.8"
-
-"@types/node@22.9.0":
+"@types/node@*", "@types/node@22.9.0":
   version "22.9.0"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-22.9.0.tgz#b7f16e5c3384788542c72dc3d561a7ceae2c0365"
   integrity sha512-vuyHg81vvWA1Z1ELfvLko2c8f34gyA0zaic0+Rllc5lbCnbSyuvb2Oxpm6TAUAC/2xZN3QGqxBNggD1nNR2AfQ==
@@ -1751,6 +1744,11 @@ ci-info@^3.2.0:
   resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-3.9.0.tgz#4279a62028a7b1f262f3473fc9605f5e218c59b4"
   integrity sha512-NIxF55hv4nSqQswkAeiOi1r83xy8JldOFDTWiug55KBu9Jnblncd2U6ViHmYgHf01TPZS77NJBhBMKdWj9HQMQ==
 
+ci-info@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-4.0.0.tgz#65466f8b280fc019b9f50a5388115d17a63a44f2"
+  integrity sha512-TdHqgGf9odd8SXNuxtUBVx8Nv+qZOejE6qyqiy5NtbYYQOeFa6zmHkxlPzmaLxWWHsU6nJmB7AETdVPi+2NBUg==
+
 cjs-module-lexer@^1.0.0:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/cjs-module-lexer/-/cjs-module-lexer-1.4.1.tgz#707413784dbb3a72aa11c2f2b042a0bef4004170"
@@ -1965,11 +1963,11 @@ csstype@^3.0.2:
   integrity sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==
 
 cypress@^13.15.0:
-  version "13.15.1"
-  resolved "https://registry.yarnpkg.com/cypress/-/cypress-13.15.1.tgz#d85074e07cc576eb30068617d529719ef6093b69"
-  integrity sha512-DwUFiKXo4lef9kA0M4iEhixFqoqp2hw8igr0lTqafRb9qtU3X0XGxKbkSYsUFdkrAkphc7MPDxoNPhk5pj9PVg==
+  version "13.15.2"
+  resolved "https://registry.yarnpkg.com/cypress/-/cypress-13.15.2.tgz#ef19554c274bc4ff23802aeb5c52951677fa67f1"
+  integrity sha512-ARbnUorjcCM3XiPwgHKuqsyr5W9Qn+pIIBPaoilnoBkLdSC2oLQjV1BUpnmc7KR+b7Avah3Ly2RMFnfxr96E/A==
   dependencies:
-    "@cypress/request" "^3.0.4"
+    "@cypress/request" "^3.0.6"
     "@cypress/xvfb" "^1.2.4"
     "@types/sinonjs__fake-timers" "8.1.1"
     "@types/sizzle" "^2.3.2"
@@ -1980,6 +1978,7 @@ cypress@^13.15.0:
     cachedir "^2.3.0"
     chalk "^4.1.0"
     check-more-types "^2.24.0"
+    ci-info "^4.0.0"
     cli-cursor "^3.1.0"
     cli-table3 "~0.6.1"
     commander "^6.2.1"
@@ -1994,7 +1993,6 @@ cypress@^13.15.0:
     figures "^3.2.0"
     fs-extra "^9.1.0"
     getos "^3.2.1"
-    is-ci "^3.0.1"
     is-installed-globally "~0.4.0"
     lazy-ass "^1.6.0"
     listr2 "^3.8.3"
@@ -2938,13 +2936,6 @@ is-arrayish@^0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/is-arrayish/-/is-arrayish-0.2.1.tgz#77c99840527aa8ecb1a8ba697b80645a7a926a9d"
   integrity sha512-zz06S8t0ozoDXMG+ube26zeCTNXcKIPJZJi8hBrF4idCLms4CG9QtK7qBl1boi5ODzFpjswb5JPmHCbMpjaYzg==
-
-is-ci@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/is-ci/-/is-ci-3.0.1.tgz#db6ecbed1bd659c43dac0f45661e7674103d1867"
-  integrity sha512-ZYvCgrefwqoQ6yTyYUbQu64HsITZ3NfKX1lzaEYdkTDcfKzzCI/wthRRYKkdjHKFVgNiXKAKm65Zo1pk2as/QQ==
-  dependencies:
-    ci-info "^3.2.0"
 
 is-core-module@^2.13.0:
   version "2.15.1"
