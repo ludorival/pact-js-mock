@@ -34,10 +34,7 @@ exports[`PactV2 should record a Pact V2 Interactions  1`] = `
     {
       "description": "This is a same description",
       "request": {
-        "body": {
-          "name": "Todo",
-        },
-        "method": "POST",
+        "method": "GET",
         "path": "v1/todo",
       },
       "response": {
@@ -144,10 +141,7 @@ exports[`PactV3 should record a Pact V3 Interactions  1`] = `
     {
       "description": "This is a same description",
       "request": {
-        "body": {
-          "name": "Todo",
-        },
-        "method": "POST",
+        "method": "GET",
         "path": "v1/todo",
       },
       "response": {
@@ -246,13 +240,7 @@ exports[`PactV4 should record a Pact V4 Interactions  1`] = `
     {
       "description": "This is a same description",
       "request": {
-        "body": {
-          "content": {
-            "name": "Todo",
-          },
-          "contentType": "application/json",
-        },
-        "method": "POST",
+        "method": "GET",
         "path": "v1/todo",
       },
       "response": {

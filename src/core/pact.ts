@@ -58,9 +58,10 @@ export class Pact<T extends PactFile = PactV2.PactFile> {
       ...input,
       request: { ...this.toRequest(request) },
     } as InteractionFor<T, TResponse, TRequest>
-    const existingInteraction = this.interactions.find(
+    const existingInteractionIndex = this.interactions.findIndex(
       (i) => i.description === description,
     )
+    const existingInteraction = this.interactions[existingInteractionIndex]
     const sameInteraction =
       existingInteraction &&
       JSON.stringify(existingInteraction) == JSON.stringify(interaction)
@@ -74,7 +75,11 @@ export class Pact<T extends PactFile = PactV2.PactFile> {
         `The interaction \`${description}\` already exists but with different content. It is recommended that the interaction stays deterministic.`,
       )
     }
-    if (!existingInteraction) this.interactions.push(interaction)
+    if (!existingInteraction) {
+      this.interactions.push(interaction)
+    } else {
+      this.interactions[existingInteractionIndex] = interaction
+    }
   }
 
   private toRequest(req: Request): Request {

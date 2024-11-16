@@ -11,3 +11,4 @@ pacts/*
 tsconfig.tsbuildinfo
 cypress/screenshots/
 cypress/videos/
+.yarn/install-state.gz
