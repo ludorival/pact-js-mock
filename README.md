@@ -22,9 +22,9 @@
 yarn add -D pact-js-mock
 ```
 
-## Getting started with MSW
+## Getting started with MSW and Jest
 
-Here is an example of how to use pact-js-mock with [MSW](https://mswjs.io/):
+Here is an example of how to use pact-js-mock with [MSW](https://mswjs.io/) using [Jest](https://jestjs.io/):
 
 ```js
 import { setupServer, rest } from 'msw/node'
@@ -46,12 +46,14 @@ const pact = new Pact(
   },
 )
 
-beforeAll(() => {
+before(() => {
   server.listen()
   deletePact(pact)
 })
 
-beforeEach(() => {
+beforeEach(function () {
+  // set the current test name as the source of the pact
+  pact.setCurrentSource(this.currentTest.title)
   reloadPact(pact)
 })
 
@@ -60,7 +62,7 @@ afterEach(() => {
   writePact(pact)
 })
 
-afterAll(() => {
+after(() => {
   server.close()
 })
 
@@ -108,6 +110,89 @@ You can find more example to mock
 - [A Rest API](./src/msw/test/rest/rest.client.test.ts)
 - [A GraphQL API](./src/msw/test/graphql/graphql.client.test.ts)
 
+### Getting started with MSW and Mocha
+
+Here is an example of how to use pact-js-mock with [MSW](https://mswjs.io/) using [Jest](https://jestjs.io/):
+
+```js
+import { setupServer, rest } from 'msw/node'
+import { Pact } from 'pact-js-mock/lib/msw'
+
+import { reloadPact, deletePact, writePact } from 'pact-js-mock/lib/utils'
+import { writeFile } from 'fs'
+
+const server = setupServer()
+
+const pact = new Pact(
+  {
+    consumer: { name: 'test-consumer' },
+    provider: { name: 'rest-provider' },
+    metadata: { pactSpecification: { version: '2.0.0' } },
+  },
+  {
+    outputDir: 'pacts', // the pact is written by default to pacts folder
+  },
+)
+
+before(() => {
+  server.listen()
+  deletePact(pact)
+})
+
+beforeEach(function () {
+  // set the current test name as the source of the pact
+  pact.setCurrentSource(this.currentTest.title)
+  reloadPact(pact)
+})
+
+afterEach(() => {
+  server.resetHandlers()
+  writePact(pact)
+})
+
+after(() => {
+  server.close()
+})
+
+it('get all movies', async () => {
+  const mockMovies = rest.get(
+    '*/movies',
+    pact.toResolver({
+      description: 'a request to list all movies',
+      response: [
+        {
+          id: 1,
+          name: 'Movie 1',
+          year: 2008,
+        },
+        {
+          id: 2,
+          name: 'Movie 2',
+          year: 2008,
+        },
+      ],
+    }),
+  )
+
+  server.use(mockMovies)
+
+  const movies = await fetchMovies()
+
+  expect(movies).toEqual([
+    {
+      id: 1,
+      name: 'Movie 1',
+      year: 2008,
+    },
+    {
+      id: 2,
+      name: 'Movie 2',
+      year: 2008,
+    },
+  ])
+})
+```
+
 ## Getting started with Cypress
 
 Here is an example of how to use pact-js-mock with [Cypress](https://www.cypress.io/):
@@ -142,6 +227,11 @@ import 'pact-js-mock/lib/cypress/commands'
 before(() => {
   // To persist recorded interaction between each tests, add this
   cy.reloadPact(pact)
+})
+
+beforeEach(() => {
+  // set the current test name as the source of the pact
+  pact.setCurrentSource(Cypress.currentTest.title)
 })
 
 after(() => {
