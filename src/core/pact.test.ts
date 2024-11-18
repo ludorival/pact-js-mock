@@ -28,6 +28,7 @@ describe('PactV2', () => {
   )
 
   beforeEach(() => {
+    jest.spyOn(console, 'warn')
     pact.setCurrentSource(expect.getState().currentTestName)
   })
 
@@ -86,6 +87,11 @@ describe('PactV2', () => {
     })
 
     const pactFile = pact.generatePactFile()
+    expect(console.warn).toHaveBeenCalledWith(
+      `The interaction 'This is a same description' already exists but with different content compared to the original one: request:
+  Expected: {\"method\":\"POST\",\"path\":\"v1/todo\",\"body\":{\"name\":\"Todo\"}}
+  Actual:   {\"method\":\"GET\",\"path\":\"v1/todo\"}`,
+    )
     expect(omitVersion(pactFile)).toMatchSnapshot()
   })
 })

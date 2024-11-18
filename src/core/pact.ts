@@ -77,7 +77,7 @@ export class Pact<T extends PactFile = PactV2.PactFile> {
     } else if (sameDescriptions.length > 0) {
       if (!this.options?.ignoreConflict)
         console.warn(
-          `The interaction \`${description}\` already exists but with different content compared to the original one: ${diffInteractions(sameDescriptions[0], interaction)}`,
+          `The interaction '${description}' already exists but with different content compared to the original one: ${diffInteractions(sameDescriptions[0], interaction)}`,
         )
       const currentSource = this.currentSource
       const newDescription = `${description}${currentSource ? ` (${currentSource})` : ''}`
@@ -148,7 +148,23 @@ function diffInteractions<P extends PactFile>(
   interaction1: InteractionFor<P>,
   interaction2: InteractionFor<P>,
 ) {
-  return JSON.stringify(interaction1) + '\n - ' + JSON.stringify(interaction2)
+  const changes: string[] = []
+  const keys = new Set([
+    ...Object.keys(interaction1),
+    ...Object.keys(interaction2),
+  ] as (keyof typeof interaction1)[])
+
+  for (const key of keys) {
+    const value1 = JSON.stringify(interaction1[key])
+    const value2 = JSON.stringify(interaction2[key])
+    if (value1 !== value2) {
+      changes.push(
+        `${String(key)}:\n  Expected: ${value1}\n  Actual:   ${value2}`,
+      )
+    }
+  }
+
+  return changes.join('\n')
 }
 
 export function buildResponse<T>(content: T, version: Version) {
