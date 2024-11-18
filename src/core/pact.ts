@@ -21,6 +21,7 @@ function pactName<P extends PactFile>(pact: InputPact<P>) {
 }
 export class Pact<T extends PactFile = PactV2.PactFile> {
   private interactions: InteractionFor<T>[] = []
+  private currentSource: string | undefined
   constructor(
     private pact: InputPact<T>,
     private options?: Options,
@@ -36,6 +37,10 @@ export class Pact<T extends PactFile = PactV2.PactFile> {
   }
   public get version(): Version {
     return this.pact.metadata?.pactSpecification?.version || '2.0.0'
+  }
+
+  public setCurrentSource(source: string | undefined) {
+    this.currentSource = source
   }
 
   public get fileName(): string {
@@ -58,27 +63,33 @@ export class Pact<T extends PactFile = PactV2.PactFile> {
       ...input,
       request: { ...this.toRequest(request) },
     } as InteractionFor<T, TResponse, TRequest>
-    const existingInteractionIndex = this.interactions.findIndex(
-      (i) => i.description === description,
-    )
-    const existingInteraction = this.interactions[existingInteractionIndex]
-    const sameInteraction =
-      existingInteraction &&
-      JSON.stringify(existingInteraction) == JSON.stringify(interaction)
 
-    if (
-      this.options?.deterministic &&
-      existingInteraction &&
-      !sameInteraction
-    ) {
-      throw new Error(
-        `The interaction \`${description}\` already exists but with different content. It is recommended that the interaction stays deterministic.`,
-      )
-    }
-    if (!existingInteraction) {
-      this.interactions.push(interaction)
+    const sameDescriptions = this.interactions.filter((i) =>
+      i.description.startsWith(description),
+    )
+
+    const perfectMatch = sameDescriptions.find((i) =>
+      isSameInteraction(i, interaction),
+    )
+
+    if (perfectMatch) {
+      return
+    } else if (sameDescriptions.length > 0) {
+      if (!this.options?.ignoreConflict)
+        console.warn(
+          `The interaction '${description}' already exists but with different content compared to the original one: ${diffInteractions(sameDescriptions[0], interaction)}`,
+        )
+      const currentSource = this.currentSource
+      const newDescription = `${description}${currentSource ? ` (${currentSource})` : ''}`
+      const count = sameDescriptions.filter(
+        (i) => i.description == newDescription,
+      ).length
+      this.interactions.push({
+        ...interaction,
+        description: `${newDescription}${count ? ` - ${count}` : ''}`,
+      })
     } else {
-      this.interactions[existingInteractionIndex] = interaction
+      this.interactions.push(interaction)
     }
   }
 
@@ -121,6 +132,39 @@ const omitHeaders = (
     blocklist.push(...remove)
   }
   return omit(headers, [...blocklist])
+}
+
+function isSameInteraction<P extends PactFile>(
+  interaction1: InteractionFor<P>,
+  interaction2: InteractionFor<P>,
+) {
+  return (
+    JSON.stringify(omit(interaction1, 'description')) ===
+    JSON.stringify(omit(interaction2, 'description'))
+  )
+}
+
+function diffInteractions<P extends PactFile>(
+  interaction1: InteractionFor<P>,
+  interaction2: InteractionFor<P>,
+) {
+  const changes: string[] = []
+  const keys = new Set([
+    ...Object.keys(interaction1),
+    ...Object.keys(interaction2),
+  ] as (keyof typeof interaction1)[])
+
+  for (const key of keys) {
+    const value1 = JSON.stringify(interaction1[key])
+    const value2 = JSON.stringify(interaction2[key])
+    if (value1 !== value2) {
+      changes.push(
+        `${String(key)}:\n  Expected: ${value1}\n  Actual:   ${value2}`,
+      )
+    }
+  }
+
+  return changes.join('\n')
 }
 
 export function buildResponse<T>(content: T, version: Version) {

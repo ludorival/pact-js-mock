@@ -18,6 +18,10 @@ before(() => {
   cy.reloadPact(pact)
 })
 
+beforeEach(() => {
+  pact.setCurrentSource(Cypress.currentTest.title)
+})
+
 after(() => {
   cy.writePact(pact)
 })
