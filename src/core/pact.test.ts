@@ -27,6 +27,10 @@ describe('PactV2', () => {
     },
   )
 
+  beforeEach(() => {
+    pact.setCurrentSource(expect.getState().currentTestName)
+  })
+
   afterEach(() => {
     pact.reset()
   })
@@ -41,6 +45,7 @@ describe('PactV2', () => {
       },
     })
     pact.record(anInteraction)
+    pact.record(anInteraction)
     pact.record({
       ...anInteraction,
       description: 'This is a same description',
@@ -49,6 +54,11 @@ describe('PactV2', () => {
       ...anInteraction,
       description: 'This is a same description',
       request: { method: 'GET', path: 'v1/todo' },
+    })
+    pact.record({
+      ...anInteraction,
+      description: 'This is a same description',
+      request: { method: 'GET', path: 'v1/todo?id=1' },
     })
     pact.record({
       ...anInteraction,
@@ -86,7 +96,9 @@ describe('PactV3', () => {
     provider: { name: 'provider' },
     metadata: { pactSpecification: { version: '3.0.0' } },
   })
-
+  beforeEach(() => {
+    pact.setCurrentSource(expect.getState().currentTestName)
+  })
   afterEach(() => {
     pact.reset()
   })
@@ -145,7 +157,9 @@ describe('PactV4', () => {
     provider: { name: 'provider' },
     metadata: { pactSpecification: { version: '4.0.0' } },
   })
-
+  beforeEach(() => {
+    pact.setCurrentSource(expect.getState().currentTestName)
+  })
   afterEach(() => {
     pact.reset()
   })
@@ -218,6 +232,7 @@ describe('PactV4', () => {
 
 describe('Deterministic Pact', () => {
   // given
+
   const pact = new Pact(
     {
       consumer: { name: 'consumer' },
@@ -225,25 +240,23 @@ describe('Deterministic Pact', () => {
       metadata: { pactSpecification: { version: '2.0.0' } },
     },
     {
-      deterministic: true,
+      ignoreConflict: true,
     },
   )
 
   beforeEach(() => {
+    pact.setCurrentSource(expect.getState().currentTestName)
     pact.reset()
+    jest.spyOn(console, 'warn')
   })
-  it('should not be able to record an interaction with same description but different request when deterministic option is set', () => {
-    // when
+
+  it('should not display a warning when the option is ignoreConflict', () => {
     pact.record(anInteraction)
-    // then
-    expect(() =>
-      pact.record({
-        ...anInteraction,
-        request: { method: 'POST', path: 'v1/todo', body: { name: 'Todo 2' } },
-      }),
-    ).toThrow(
-      'The interaction `This is a description` already exists but with different content. It is recommended that the interaction stays deterministic.',
-    )
+    pact.record({
+      ...anInteraction,
+      request: { method: 'POST', path: 'v1/todo', body: { name: 'Todo 2' } },
+    })
+    expect(console.warn).not.toHaveBeenCalled()
   })
 
   it('should be able to record same interactions multiple times', () => {

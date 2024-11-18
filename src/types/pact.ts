@@ -44,7 +44,7 @@ export type Request = PactV2.Request | PactV3.Request | PactV4.Request
 export type Options = {
   headersConfig?: HeadersConfig
   basePath?: string
-  deterministic?: boolean
+  ignoreConflict?: boolean
   outputDir?: string
 }
 

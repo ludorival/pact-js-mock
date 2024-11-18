@@ -34,8 +34,33 @@ exports[`PactV2 should record a Pact V2 Interactions  1`] = `
     {
       "description": "This is a same description",
       "request": {
+        "body": {
+          "name": "Todo",
+        },
+        "method": "POST",
+        "path": "v1/todo",
+      },
+      "response": {
+        "body": "This is an interaction with a description",
+        "status": 200,
+      },
+    },
+    {
+      "description": "This is a same description (PactV2 should record a Pact V2 Interactions )",
+      "request": {
         "method": "GET",
         "path": "v1/todo",
+      },
+      "response": {
+        "body": "This is an interaction with a description",
+        "status": 200,
+      },
+    },
+    {
+      "description": "This is a same description (PactV2 should record a Pact V2 Interactions ) - 1",
+      "request": {
+        "method": "GET",
+        "path": "v1/todo?id=1",
       },
       "response": {
         "body": "This is an interaction with a description",
@@ -141,6 +166,20 @@ exports[`PactV3 should record a Pact V3 Interactions  1`] = `
     {
       "description": "This is a same description",
       "request": {
+        "body": {
+          "name": "Todo",
+        },
+        "method": "POST",
+        "path": "v1/todo",
+      },
+      "response": {
+        "body": "This is an interaction with a description",
+        "status": 200,
+      },
+    },
+    {
+      "description": "This is a same description (PactV3 should record a Pact V3 Interactions )",
+      "request": {
         "method": "GET",
         "path": "v1/todo",
       },
@@ -239,6 +278,26 @@ exports[`PactV4 should record a Pact V4 Interactions  1`] = `
     },
     {
       "description": "This is a same description",
+      "request": {
+        "body": {
+          "content": {
+            "name": "Todo",
+          },
+          "contentType": "application/json",
+        },
+        "method": "POST",
+        "path": "v1/todo",
+      },
+      "response": {
+        "body": {
+          "content": "This is an interaction with a description",
+          "contentType": "application/json",
+        },
+      },
+      "type": "Synchronous/HTTP",
+    },
+    {
+      "description": "This is a same description (PactV4 should record a Pact V4 Interactions )",
       "request": {
         "method": "GET",
         "path": "v1/todo",
