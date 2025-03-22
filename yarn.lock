@@ -370,10 +370,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@cypress/react@^8.0.2":
-  version "8.0.2"
-  resolved "https://registry.yarnpkg.com/@cypress/react/-/react-8.0.2.tgz#ae6651f61b2182f4485a21300f320c3efa3cb9ce"
-  integrity sha512-7TgXXEeJ/GnGiIQhO8mAfkyychyMv5hNyISV3ti/vceriTI0uGtbjwRqLQhuVgOSHLtboUZUIoRlR6BkgIdVVg==
+"@cypress/react@^9.0.0":
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/@cypress/react/-/react-9.0.0.tgz#efc567d3c26991c3e53942e77719a3e4297e53bb"
+  integrity sha512-LFrLnt5939v6pXghcadhMxCq+/4ESL68zjNIk3ZYzk7MUhSeJa7bm+YVBTi6Tp1XCC3kVA9NM9u3IltKA02wjw==
 
 "@cypress/request@^3.0.6":
   version "3.0.7"
