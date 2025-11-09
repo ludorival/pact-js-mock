@@ -2,8 +2,8 @@
 import type from 'cypress'
 import { InteractionFor, MinimalInteraction, PactFile } from '../types'
 import { pactRegistry } from './registry'
-import { Pact as CypressPact, createConfiguredPact } from './pact'
 import { inferProviderName } from './provider'
+import type { Method } from 'cypress/types/net-stubbing'
 
 /* eslint-disable @typescript-eslint/no-namespace */
 
@@ -26,7 +26,7 @@ declare global {
        * @returns Chainable that can be used with .as() for aliasing
        */
       pactIntercept(
-        method: string,
+        method: Method,
         url: string | RegExp,
         responseOrInteraction:
           | unknown
@@ -37,7 +37,7 @@ declare global {
 }
 
 function pactIntercept(
-  method: string,
+  method: Method,
   url: string | RegExp,
   responseOrInteraction: unknown | MinimalInteraction<InteractionFor<PactFile>>,
 ): Cypress.Chainable {
@@ -45,12 +45,13 @@ function pactIntercept(
 
   const pactInstance = pactRegistry.getOrCreate(providerName)
 
-  // Convert response/interaction to handler
-  // toHandler() automatically handles both simple response bodies and full interaction objects
-  const handler = pactInstance.toHandler(responseOrInteraction as any)
+  const handler = pactInstance.toHandler(
+    responseOrInteraction as
+      | MinimalInteraction<InteractionFor<PactFile, unknown>>
+      | object,
+  )
 
-  // Use cy.intercept with the handler and return the chainable
-  return cy.intercept(method as any, url, handler)
+  return cy.intercept(method, url, handler)
 }
 
 Cypress.Commands.add('pactIntercept', pactIntercept)

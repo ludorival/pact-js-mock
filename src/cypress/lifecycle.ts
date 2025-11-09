@@ -1,16 +1,17 @@
 import { PactFile } from '../types'
 import { pactRegistry } from './registry'
-import { Pact } from './pact'
 
 /**
  * Automatically manages Pact lifecycle hooks for Cypress tests
  */
+let lifecycleHooksRegistered = false
+
 export function setupLifecycleHooks(): void {
   // Track if hooks have been set up to avoid duplicate registration
-  if ((Cypress as any).__pactLifecycleSetup) {
+  if (lifecycleHooksRegistered) {
     return
   }
-  ;(Cypress as any).__pactLifecycleSetup = true
+  lifecycleHooksRegistered = true
 
   // Reload pacts before all tests
   before(() => {

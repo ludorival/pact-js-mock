@@ -1,14 +1,14 @@
 /**
  * Auto-setup for Cypress Pact integration
- * 
+ *
  * This module automatically:
  * - Registers Cypress commands
  * - Sets up lifecycle hooks for pact management
  * - Provides a simplified API for pact testing
- * 
+ *
  * Usage:
  *   import 'pact-js-mock/lib/cypress'
- * 
+ *
  * That's it! No additional configuration needed.
  */
 

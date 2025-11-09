@@ -29,17 +29,18 @@ describe('To-Do list Rest API client', () => {
       mount(<TodoList {...props} />)
 
       // expect the actual data to match the expected data
-      cy.wait('@multipleTodos')
+      void cy
+        .wait('@multipleTodos')
         .its('response')
         .its('statusCode')
         .should('be.equal', 200)
       cy.then(() => {
         const todoPact = pactRegistry.get('todo-service')
-        expect(todoPact, 'todo-service pact exists').to.exist
+        void expect(todoPact, 'todo-service pact exists').to.exist
         if (!todoPact) {
           return
         }
-        expect(todoPact.providerName).to.equal('todo-service')
+        void expect(todoPact.providerName).to.equal('todo-service')
       })
     })
 
@@ -56,7 +57,8 @@ describe('To-Do list Rest API client', () => {
       // Mount the TodoList to fetchTodos function and get the actual data
       mount(<TodoList {...props} />)
 
-      cy.wait('@todosWillRaiseTechnicalFailure')
+      void cy
+        .wait('@todosWillRaiseTechnicalFailure')
         .its('response')
         .its('statusCode')
         .should('be.equal', 500)
@@ -68,7 +70,7 @@ describe('To-Do list Rest API client', () => {
       cy.get('#reload').click()
 
       // expect the actual data to match the expected data
-      cy.wait('@emptyTodos').its('response.body').should('have.length', 0)
+      void cy.wait('@emptyTodos').its('response.body').should('have.length', 0)
     })
   })
 
@@ -110,11 +112,12 @@ describe('To-Do list Rest API client', () => {
       mount(<TodoDetails id="1" {...props} />)
 
       // expect the actual data to match the expected status code
-      cy.wait('@todoByIdFound')
+      void cy
+        .wait('@todoByIdFound')
         .its('response')
         .its('statusCode')
         .should('be.equal', 200)
-      cy.wait('@userByIdFound')
+      void cy.wait('@userByIdFound')
       cy.contains('Owner: Alice Smith')
     })
 
@@ -131,7 +134,8 @@ describe('To-Do list Rest API client', () => {
       mount(<TodoDetails id="1" {...props} />)
 
       // expect the actual data to match the expected status code
-      cy.wait('@todoByIdNotFound')
+      void cy
+        .wait('@todoByIdNotFound')
         .its('response')
         .its('statusCode')
         .should('be.equal', 404)
@@ -142,7 +146,7 @@ describe('To-Do list Rest API client', () => {
     it('the generated pact metadata should match the configuration', () => {
       cy.then(() => {
         const todoPact = pactRegistry.get('todo-service')
-        expect(todoPact, 'todo-service pact exists').to.exist
+        void expect(todoPact, 'todo-service pact exists').to.exist
         if (!todoPact) {
           return
         }
@@ -150,7 +154,7 @@ describe('To-Do list Rest API client', () => {
         return cy
           .fixture('test-consumer-todo-service.json')
           .then((expectedPact) => {
-            expect(omitVersion(generatedTodo)).to.deep.equal(
+            void expect(omitVersion(generatedTodo)).to.deep.equal(
               omitVersion(expectedPact, false),
             )
           })
@@ -158,7 +162,7 @@ describe('To-Do list Rest API client', () => {
 
       cy.then(() => {
         const userPact = pactRegistry.get('user-service')
-        expect(userPact, 'user-service pact exists').to.exist
+        void expect(userPact, 'user-service pact exists').to.exist
         if (!userPact) {
           return
         }
@@ -166,7 +170,7 @@ describe('To-Do list Rest API client', () => {
         return cy
           .fixture('test-consumer-user-service.json')
           .then((expectedPact) => {
-            expect(omitVersion(generatedUser)).to.deep.equal(
+            void expect(omitVersion(generatedUser)).to.deep.equal(
               omitVersion(expectedPact, false),
             )
           })
