@@ -1,0 +1,37 @@
+{
+  "consumer": {
+    "name": "test-consumer"
+  },
+  "provider": {
+    "name": "user-service"
+  },
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    },
+    "client": {
+      "name": "pact-js-mock",
+      "version": "0.5.0"
+    }
+  },
+  "interactions": [
+    {
+      "description": "should find the associated user",
+      "response": {
+        "status": 200,
+        "body": {
+          "id": "user-1",
+          "name": "Alice Smith",
+          "email": "alice@example.com"
+        }
+      },
+      "request": {
+        "method": "GET",
+        "path": "/user-service/users/user-1",
+        "headers": {},
+        "body": "",
+        "query": ""
+      }
+    }
+  ]
+}

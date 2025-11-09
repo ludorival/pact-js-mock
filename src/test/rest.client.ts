@@ -1,7 +1,13 @@
 import axios, { Method } from 'axios'
-import { CreateTodoApi, FetchTodosApi, TodoByIdApi } from './Todo'
+import {
+  CreateTodoApi,
+  FetchTodosApi,
+  FetchUserByIdApi,
+  TodoByIdApi,
+  UserProfile,
+} from './Todo'
 
-const url = 'https://pact-js-mock.example.com/api'
+const baseUrl = 'https://pact-js-mock.example.com'
 
 async function rest<TData, TVariables = unknown>({
   method,
@@ -14,7 +20,7 @@ async function rest<TData, TVariables = unknown>({
 }): Promise<TData> {
   const { data: response } = await axios<TData>({
     method,
-    url: `${url}${path}`,
+    url: `${baseUrl}${path}`,
     data: body,
   })
 
@@ -22,16 +28,22 @@ async function rest<TData, TVariables = unknown>({
 }
 // define a function to fetch all To-Do items
 export const fetchTodos: FetchTodosApi = () =>
-  rest({ method: 'get', path: '/todos?all=true' })
+  rest({ method: 'get', path: '/todo-service/todos?all=true' })
 
 // define a function to fetch all To-Do items
 export const todoById: TodoByIdApi = (id) =>
-  rest({ method: 'get', path: `/todos/${id}` })
+  rest({ method: 'get', path: `/todo-service/todos/${id}` })
 
 // define a function to create a new To-Do item
 export const createTodo: CreateTodoApi = (title, description) =>
   rest({
     method: 'post',
-    path: `/todos`,
+    path: `/todo-service/todos`,
     body: { title, description },
+  })
+
+export const fetchUserById: FetchUserByIdApi = (id: string) =>
+  rest<UserProfile>({
+    method: 'get',
+    path: `/user-service/users/${id}`,
   })

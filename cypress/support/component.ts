@@ -13,6 +13,6 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-// Import commands.js using ES2015 syntax:
-
-import '../../src/cypress/commands'
+// Import pact-js-mock Cypress integration (auto-setup)
+// This automatically registers commands and lifecycle hooks
+import '../../src/cypress'

@@ -4,11 +4,18 @@
  */
 import type { Config } from 'jest'
 const config: Config = {
-  // Automatically clear mock calls and instances between every test
   clearMocks: true,
+  // Transform .ts, .tsx, .js and .jsx files with ts-jest so we can process ESM
   transform: {
-    '\\.(ts)$': ['ts-jest', { tsconfig: 'tsconfig.jest.json' }],
+    '^.+\\.[tj]sx?$': [
+      'ts-jest',
+      { tsconfig: 'tsconfig.jest.json', isolatedModules: true },
+    ],
   },
+  // Allow msw and its ESM dependencies in node_modules to be transformed
+  transformIgnorePatterns: [
+    '/node_modules/(?!(msw|@mswjs|@open-draft|until-async)/)',
+  ],
   coverageDirectory: 'coverage',
   coverageThreshold: {
     global: {
@@ -21,5 +28,6 @@ const config: Config = {
   coveragePathIgnorePatterns: ['/node_modules/', '/dist/'],
   testEnvironment: 'node',
   reporters: [['github-actions', { silent: false }], 'summary'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
 }
 export default config

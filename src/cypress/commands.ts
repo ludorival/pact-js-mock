@@ -1,28 +1,57 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type from 'cypress'
-import { Pact } from '../core'
-import { PactFile } from '../types'
+import { InteractionFor, MinimalInteraction, PactFile } from '../types'
+import { inferProviderName } from '../core'
+import { pactRegistry } from './registry'
+import type { Method } from 'cypress/types/net-stubbing'
 
 /* eslint-disable @typescript-eslint/no-namespace */
 
 declare global {
   namespace Cypress {
     interface Chainable {
-      writePact<P extends PactFile>(pact: Pact<P>): Chainable<void>
-      reloadPact<P extends PactFile>(pact: Pact<P>): Chainable<void>
+      /**
+       * Intercept HTTP requests and record them as Pact interactions.
+       *
+       * Simplest usage - just pass the response body:
+       * cy.pactIntercept('POST', '/order-service/v1/order', { id: 123 })
+       *
+       * For custom interactions (description, provider states, matching rules):
+       * cy.pactIntercept('POST', '/order-service/v1/order', {
+       *   description: 'create order',
+       *   providerState: 'order service is available',
+       *   response: { status: 201, body: { id: 123 } }
+       * })
+       *
+       * @returns Chainable that can be used with .as() for aliasing
+       */
+      pactIntercept(
+        method: Method,
+        url: string | RegExp,
+        responseOrInteraction:
+          | unknown
+          | MinimalInteraction<InteractionFor<PactFile>>,
+      ): Chainable
     }
   }
 }
 
-function writePact<P extends PactFile>(pact: Pact<P>): void {
-  cy.writeFile(pact.fileName, pact.generatePactFile())
-}
+function pactIntercept(
+  method: Method,
+  url: string | RegExp,
+  responseOrInteraction: unknown | MinimalInteraction<InteractionFor<PactFile>>,
+): Cypress.Chainable {
+  const providerName = inferProviderName(url)
 
-function reloadPact<P extends PactFile>(pact: Pact<P>) {
-  cy.task('readPact', pact.fileName).then((pactFile) =>
-    pact.reset(pactFile as P),
+  const pactInstance = pactRegistry.getOrCreate(providerName)
+
+  const handler = pactInstance.toHandler(
+    responseOrInteraction as
+      | MinimalInteraction<InteractionFor<PactFile, unknown>>
+      | object,
   )
-}
-Cypress.Commands.add('writePact', writePact)
 
-Cypress.Commands.add('reloadPact', reloadPact)
+  return cy.intercept(method, url, handler)
+}
+
+Cypress.Commands.add('pactIntercept', pactIntercept)

@@ -53,6 +53,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
         "body": {
           "cookies": {},
           "operationName": "todos",
+          "operationType": "query",
           "query": "
     query todos {
       todos {
@@ -133,6 +134,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
         "body": {
           "cookies": {},
           "operationName": "todos",
+          "operationType": "query",
           "query": "
     query todos {
       todos {
@@ -167,6 +169,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
         "body": {
           "cookies": {},
           "operationName": "createTodo",
+          "operationType": "mutation",
           "query": "
     mutation createTodo($title: String!, $description: String) {
       createTodo(input: { title: $title, description: $description }) {
@@ -209,6 +212,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
         "body": {
           "cookies": {},
           "operationName": "todoById",
+          "operationType": "query",
           "query": "
     query todoById($id: ID) {
       todoById(id: $id) {
@@ -250,6 +254,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
         "body": {
           "cookies": {},
           "operationName": "todoById",
+          "operationType": "query",
           "query": "
     query todoById($id: ID) {
       todoById(id: $id) {

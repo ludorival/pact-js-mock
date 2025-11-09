@@ -3,6 +3,7 @@ export interface Todo {
   title: string
   description: string
   completed: boolean
+  ownerId?: string
 }
 
 // Type pour la fonction fetchTodos
@@ -16,3 +17,11 @@ export type CreateTodoApi = (
   title: string,
   description?: string,
 ) => Promise<Todo>
+
+export interface UserProfile {
+  id: string
+  name: string
+  email?: string
+}
+
+export type FetchUserByIdApi = (id: string) => Promise<UserProfile>

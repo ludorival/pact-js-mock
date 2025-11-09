@@ -1,7 +1,14 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["node", "jest"]  // Utiliser uniquement les types Jest ici
+    "types": ["node", "jest"],  // Utiliser uniquement les types Jest ici
+    "allowJs": true,
+    "rootDir": "."
   },
-  "include": ["**/*.test.ts"]  // Inclure uniquement les fichiers de test Jest
+  "include": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.test.js",
+    "**/*.test.jsx"
+  ]  // Inclure uniquement les fichiers de test Jest
 }

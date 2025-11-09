@@ -1,7 +1,14 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["cypress"]
+    "types": ["cypress"],
+    "baseUrl": ".",
+    "paths": {
+      "pact-js-mock": ["src/index.ts"],
+      "pact-js-mock/*": ["src/*"],
+      "pact-js-mock/lib": ["src"],
+      "pact-js-mock/lib/*": ["src/cypress/*"]
+    }
   },
   "include": ["**/*.cy.ts"]
 }

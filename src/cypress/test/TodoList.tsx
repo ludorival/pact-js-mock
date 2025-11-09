@@ -4,6 +4,7 @@ import TodoDetails from './TodoDetails'
 import {
   CreateTodoApi,
   FetchTodosApi,
+  FetchUserByIdApi,
   Todo,
   TodoByIdApi,
 } from '../../test/Todo'
@@ -12,12 +13,14 @@ interface TodoListProps {
   fetchTodos: FetchTodosApi
   createTodo: CreateTodoApi
   todoById: TodoByIdApi
+  fetchUserById: FetchUserByIdApi
 }
 // Composant TodoList
 const TodoList: React.FC<TodoListProps> = ({
   fetchTodos,
   createTodo,
   todoById,
+  fetchUserById,
 }) => {
   const [todos, setTodos] = useState<Todo[]>([])
   const [selectedTodoId, setSelectedTodoId] = useState<string | null>(null)
@@ -52,7 +55,11 @@ const TodoList: React.FC<TodoListProps> = ({
       </button>
 
       {selectedTodoId && (
-        <TodoDetails id={selectedTodoId} todoById={todoById} />
+        <TodoDetails
+          id={selectedTodoId}
+          todoById={todoById}
+          fetchUserById={fetchUserById}
+        />
       )}
     </div>
   )
