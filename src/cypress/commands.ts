@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type from 'cypress'
 import { InteractionFor, MinimalInteraction, PactFile } from '../types'
+import { inferProviderName } from '../core'
 import { pactRegistry } from './registry'
-import { inferProviderName } from './provider'
 import type { Method } from 'cypress/types/net-stubbing'
 
 /* eslint-disable @typescript-eslint/no-namespace */

@@ -195,106 +195,76 @@ it('get all movies', async () => {
 
 ## Getting started with Cypress
 
-Here is an example of how to use pact-js-mock with [Cypress](https://www.cypress.io/):
+`pact-js-mock` ships with an auto-setup path for Cypress so you can record pacts with almost no boilerplate.
 
-### Setup Pact
+### 1. Import the Cypress support shim
 
-Write a file named `pact.js` for example
+Add a single import in your Cypress support file (for example `cypress/support/component.ts` or `cypress/support/e2e.ts`):
 
-```js
-import { Pact } from 'pact-js-mock/lib/cypress'
-
-export const pact = new Pact(
-  {
-    consumer: { name: 'test-consumer' },
-    provider: { name: 'rest-provider' },
-    metadata: { pactSpecification: { version: '2.0.0' } },
-  },
-  {
-    outputDir: 'pacts', // the pact is written by default to pacts folder
-  },
-)
+```ts
+import 'pact-js-mock/lib/cypress'
 ```
 
-### Setup Cypress commands
+This registers the `cy.pactIntercept()` command and wires the lifecycle hooks that read existing pacts before tests and write the updated files afterwards.
 
-Two Cypress functions are available with this module `cy.reloadPact()` and `cy.writePact()`, import the module `pact-js-mock/lib/cypress/commands` in the file `cypress/support/commands.(js|ts)`
+### 2. Register the plugin
 
-```js
-// cypress/support/commands.js
-import 'pact-js-mock/lib/cypress/commands'
-
-before(() => {
-  // To persist recorded interaction between each tests, add this
-  cy.reloadPact(pact)
-})
-
-beforeEach(() => {
-  // set the current test name as the source of the pact
-  pact.setCurrentSource(Cypress.currentTest.title)
-})
-
-after(() => {
-  // Write the pact file after each Cypress test
-  cy.writePact(pact)
-})
-```
-
-### Setup Cypress plugin
-
-Import this in the `cypress/plugins/index.js`
+To persist pact files across runs, wire the Pact plugin in your Cypress configuration. The example below uses the classic `cypress/plugins/index.js` entry:
 
 ```js
 // cypress/plugins/index.js
-
-import pactPlugin from 'pact-js-mock/lib/cypress/plugin'
+const pactPlugin = require('pact-js-mock/lib/cypress/plugin').default
 
 module.exports = (on, config) => {
-  config = pactPlugin(on, config)
-  return config
+  return pactPlugin(on, config, {
+    consumerName: 'web-app',
+    pactVersion: '4.0.0',
+  })
 }
 ```
 
-### Write a sample test
+If you're using the newer `setupNodeEvents` API inside `cypress.config.ts`, import the same plugin and return the value from `setupNodeEvents` instead.
 
-```js
-it('get all movies', async () => {
-  // intercept and mock the movies response while record the interaction
-  cy.intercept(
-    'GET',
-    `/*/movies`,
-    pact.toHandler({
-      description: 'a request to list all movies',
-      response: [
-        {
-          id: 1,
-          name: 'Movie 1',
-          year: 2008,
-        },
-        {
-          id: 2,
-          name: 'Movie 2',
-          year: 2008,
-        },
-      ],
-    }),
-  ).as('multipleMovies')
+```ts
+// cypress.config.ts
+import { defineConfig } from 'cypress'
+import pactPlugin from 'pact-js-mock/lib/cypress/plugin'
 
-  // open the page to test
-  cy.visit('/')
-
-  // add your assertions
-  cy.wait('@multipleMovies')
-    .its('response')
-    .its('statusCode')
-    .should('be.equal', 200)
+export default defineConfig({
+  e2e: {
+    setupNodeEvents(on, config) {
+      return pactPlugin(on, config, {
+        consumerName: 'web-app',
+        pactVersion: '4.0.0',
+      })
+    },
+  },
 })
 ```
 
-You can find more example to mock
+### 3. Write tests with `cy.pactIntercept()`
 
-- [A Rest API](./src/cypress/test/rest/rest.client.cy.tsx)
-- [A GraphQL API](./src/cypress/test/graphql/graphql.client.cy.tsx)
+Use `cy.pactIntercept()` instead of `cy.intercept()`. You can pass either a plain response body or a full Pact interaction. Provider names are inferred from the URL, and pact files are generated automatically:
+
+```ts
+describe('todos', () => {
+  it('lists all todos', () => {
+    cy.pactIntercept('GET', '/todo-service/todos', [
+      { id: '1', title: 'Buy milk' },
+      { id: '2', title: 'Pay bills' },
+    ]).as('todos')
+
+    cy.visit('/todos')
+
+    cy.wait('@todos').its('response').its('statusCode').should('eq', 200)
+  })
+})
+```
+
+You can find complete examples under:
+
+- [REST component tests](./src/cypress/test/rest/rest.client.cy.tsx)
+- [GraphQL component tests](./src/cypress/test/graphql/graphql.client.cy.tsx)
 
 ## Author
 
