@@ -1,0 +1,190 @@
+{
+  "consumer": {
+    "name": "test-consumer"
+  },
+  "provider": {
+    "name": "graphql"
+  },
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    },
+    "client": {
+      "name": "pact-js-mock",
+      "version": "0.5.0"
+    }
+  },
+  "interactions": [
+    {
+      "description": "should list todo items using GraphQL",
+      "response": {
+        "status": 200,
+        "body": {
+          "data": {
+            "todos": [
+              {
+                "id": "1",
+                "title": "Buy groceries",
+                "description": "Milk, bread, eggs, cheese",
+                "completed": false
+              },
+              {
+                "id": "2",
+                "title": "Do laundry",
+                "description": "",
+                "completed": true
+              },
+              {
+                "id": "3",
+                "title": "Call plumber",
+                "description": "Fix leaky faucet in the bathroom",
+                "completed": false
+              }
+            ]
+          }
+        }
+      },
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "query": "\n    query todos {\n      todos {\n        id\n        title\n        description\n        completed\n      }\n    }\n  "
+        },
+        "query": ""
+      }
+    },
+    {
+      "description": "graphql api returns a 500 http error",
+      "operationName": "todos",
+      "providerState": "will return a 500 http error",
+      "response": {
+        "status": 500
+      },
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "query": "\n    query todos {\n      todos {\n        id\n        title\n        description\n        completed\n      }\n    }\n  "
+        },
+        "query": ""
+      }
+    },
+    {
+      "description": "empty todo list",
+      "response": {
+        "status": 200,
+        "body": {
+          "data": {
+            "todos": []
+          }
+        }
+      },
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "query": "\n    query todos {\n      todos {\n        id\n        title\n        description\n        completed\n      }\n    }\n  "
+        },
+        "query": ""
+      }
+    },
+    {
+      "description": "should create a Todo with success",
+      "response": {
+        "status": 200,
+        "body": {
+          "data": {
+            "createTodo": {
+              "id": "1",
+              "title": "Buy groceries",
+              "description": "Milk, bread, eggs, cheese",
+              "completed": false
+            }
+          }
+        }
+      },
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "query": "\n    mutation createTodo($title: String!, $description: String) {\n      createTodo(input: { title: $title, description: $description }) {\n        id\n        title\n        description\n        completed\n      }\n    }\n  ",
+          "variables": {
+            "title": "Go to groceries",
+            "description": "- Banana, Apple"
+          }
+        },
+        "query": ""
+      }
+    },
+    {
+      "description": "should found a todo item by its id",
+      "providerState": "there is an existing todo item with this id",
+      "response": {
+        "status": 200,
+        "body": {
+          "data": {
+            "todoById": {
+              "id": "1",
+              "title": "Buy groceries",
+              "description": "Milk, bread, eggs, cheese",
+              "completed": false
+            }
+          }
+        }
+      },
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "query": "\n    query todoById($id: ID) {\n      todoById(id: $id) {\n        id\n        title\n        description\n        completed\n      }\n    }\n  ",
+          "variables": {
+            "id": "1"
+          }
+        },
+        "query": ""
+      }
+    },
+    {
+      "description": "should not found a todo item by its id",
+      "response": {
+        "status": 200,
+        "body": {
+          "errors": [
+            {
+              "message": "The todo item 1 is not found"
+            }
+          ]
+        }
+      },
+      "request": {
+        "method": "POST",
+        "path": "/graphql",
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "query": "\n    query todoById($id: ID) {\n      todoById(id: $id) {\n        id\n        title\n        description\n        completed\n      }\n    }\n  ",
+          "variables": {
+            "id": "1"
+          }
+        },
+        "query": ""
+      }
+    }
+  ]
+}

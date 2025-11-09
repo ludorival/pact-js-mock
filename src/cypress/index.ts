@@ -8,5 +8,3 @@ import './setup'
 // Export setup utilities for advanced usage
 export { pactRegistry } from './registry'
 export { setupLifecycleHooks } from './lifecycle'
-export { withPact } from './config-helper'
-export { default as pactPlugin } from './plugin'

@@ -1,0 +1,145 @@
+{
+  "consumer": {
+    "name": "test-consumer"
+  },
+  "provider": {
+    "name": "todo-service"
+  },
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    },
+    "client": {
+      "name": "pact-js-mock",
+      "version": "0.5.0"
+    }
+  },
+  "interactions": [
+    {
+      "description": "GET /todo-service/todos returns status 200",
+      "response": {
+        "status": 200,
+        "body": [
+          {
+            "id": "1",
+            "title": "Buy groceries",
+            "description": "Milk, bread, eggs, cheese",
+            "completed": false,
+            "ownerId": "user-1"
+          },
+          {
+            "id": "2",
+            "title": "Do laundry",
+            "description": "",
+            "completed": true,
+            "ownerId": "user-2"
+          },
+          {
+            "id": "3",
+            "title": "Call plumber",
+            "description": "Fix leaky faucet in the bathroom",
+            "completed": false,
+            "ownerId": "user-3"
+          }
+        ]
+      },
+      "request": {
+        "method": "GET",
+        "path": "/todos",
+        "headers": {},
+        "body": "",
+        "query": "?all=true"
+      }
+    },
+    {
+      "description": "rest api returns a 500 http error",
+      "providerState": "will return a 500 http error",
+      "response": {
+        "status": 500
+      },
+      "request": {
+        "method": "GET",
+        "path": "/todos",
+        "headers": {},
+        "body": "",
+        "query": "?all=true"
+      }
+    },
+    {
+      "description": "empty todo list",
+      "response": {
+        "status": 200,
+        "body": []
+      },
+      "request": {
+        "method": "GET",
+        "path": "/todos",
+        "headers": {},
+        "body": "",
+        "query": "?all=true"
+      }
+    },
+    {
+      "description": "should create a Todo with success",
+      "response": {
+        "status": 201,
+        "body": {
+          "id": "1",
+          "title": "Buy groceries",
+          "description": "Milk, bread, eggs, cheese",
+          "completed": false,
+          "ownerId": "user-1"
+        }
+      },
+      "request": {
+        "method": "POST",
+        "path": "/todos",
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "title": "Go to groceries",
+          "description": "- Banana, Apple"
+        },
+        "query": ""
+      }
+    },
+    {
+      "description": "should found a todo item by its id",
+      "providerState": "there is an existing todo item with this id",
+      "response": {
+        "status": 200,
+        "body": {
+          "id": "1",
+          "title": "Buy groceries",
+          "description": "Milk, bread, eggs, cheese",
+          "completed": false,
+          "ownerId": "user-1"
+        }
+      },
+      "request": {
+        "method": "GET",
+        "path": "/todos/1",
+        "headers": {},
+        "body": "",
+        "query": ""
+      }
+    },
+    {
+      "description": "should not found a todo item by its id",
+      "response": {
+        "status": 404,
+        "body": {
+          "message": "The todo item 1 is not found"
+        }
+      },
+      "request": {
+        "method": "GET",
+        "path": "/todos/1",
+        "headers": {},
+        "body": "",
+        "query": ""
+      }
+    }
+  ]
+}

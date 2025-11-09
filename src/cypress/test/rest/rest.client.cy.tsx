@@ -1,3 +1,4 @@
+import React from 'react'
 import { mount } from '@cypress/react'
 import * as props from '../../../test/rest.client'
 import CreateTodo from '../CreateTodo'
@@ -7,21 +8,20 @@ import {
   createTodoWillSucceed,
   emptyTodos,
   multipleTodos,
-  pact,
   todoByIdFound,
   todoByIdNotFound,
   todosWillRaiseTechnicalFailure,
+  userByIdFound,
 } from './handlers'
 import { omitVersion } from '../../../test/utils'
-
-// Register the pact instance - lifecycle hooks are handled automatically
-cy.registerPact(pact)
+import { pactRegistry } from '../../registry'
+import type {} from '../../commands'
 
 describe('To-Do list Rest API client', () => {
   describe('fetchTodos', () => {
     it('should fetch all To-Do items', () => {
       // use multipleTodos handlers from contracts
-      cy.intercept('GET', `/api/todos?all=true`, multipleTodos).as(
+      cy.pactIntercept('GET', `/todo-service/todos?all=true`, multipleTodos).as(
         'multipleTodos',
       )
 
@@ -33,6 +33,14 @@ describe('To-Do list Rest API client', () => {
         .its('response')
         .its('statusCode')
         .should('be.equal', 200)
+      cy.then(() => {
+        const todoPact = pactRegistry.get('todo-service')
+        expect(todoPact, 'todo-service pact exists').to.exist
+        if (!todoPact) {
+          return
+        }
+        expect(todoPact.providerName).to.equal('todo-service')
+      })
     })
 
     it('should get a technical failure the first time and an empty todo list', () => {
@@ -40,9 +48,9 @@ describe('To-Do list Rest API client', () => {
         return false // ignore
       })
       // use todosWillRaiseTechnicalFailure and emptyTodos handlers from contracts
-      cy.intercept(
+      cy.pactIntercept(
         'GET',
-        '/api/todos?all=true',
+        '/todo-service/todos?all=true',
         todosWillRaiseTechnicalFailure,
       ).as('todosWillRaiseTechnicalFailure')
       // Mount the TodoList to fetchTodos function and get the actual data
@@ -53,7 +61,9 @@ describe('To-Do list Rest API client', () => {
         .its('statusCode')
         .should('be.equal', 500)
 
-      cy.intercept('GET', '/api/todos?all=true', emptyTodos).as('emptyTodos')
+      cy.pactIntercept('GET', '/todo-service/todos?all=true', emptyTodos).as(
+        'emptyTodos',
+      )
       // Reload the fetch
       cy.get('#reload').click()
 
@@ -65,7 +75,7 @@ describe('To-Do list Rest API client', () => {
   describe('createTodo', () => {
     it('should create a new To-Do item', () => {
       // use createTodoWillSucceed handlers from contracts
-      cy.intercept('POST', '/api/todos', createTodoWillSucceed).as(
+      cy.pactIntercept('POST', '/todo-service/todos', createTodoWillSucceed).as(
         'createTodoWillSucceed',
       )
 
@@ -89,7 +99,12 @@ describe('To-Do list Rest API client', () => {
   describe('todoById', () => {
     it('should get a todo by its id', () => {
       // use todoByIdFound handlers from contracts
-      cy.intercept('GET', '/api/todos/*', todoByIdFound).as('todoByIdFound')
+      cy.pactIntercept('GET', '/todo-service/todos/*', todoByIdFound).as(
+        'todoByIdFound',
+      )
+      cy.pactIntercept('GET', '/user-service/users/*', userByIdFound).as(
+        'userByIdFound',
+      )
 
       // mount the TodoDetails and get the actual data
       mount(<TodoDetails id="1" {...props} />)
@@ -99,6 +114,8 @@ describe('To-Do list Rest API client', () => {
         .its('response')
         .its('statusCode')
         .should('be.equal', 200)
+      cy.wait('@userByIdFound')
+      cy.contains('Owner: Alice Smith')
     })
 
     it('should get an error when getting a todo does not found it', () => {
@@ -106,7 +123,7 @@ describe('To-Do list Rest API client', () => {
         return false // ignore
       })
       // use todoByIdFound handlers from contracts
-      cy.intercept('GET', '/api/todos/*', todoByIdNotFound).as(
+      cy.pactIntercept('GET', '/todo-service/todos/*', todoByIdNotFound).as(
         'todoByIdNotFound',
       )
 
@@ -121,12 +138,39 @@ describe('To-Do list Rest API client', () => {
     })
   })
 
-  it('the generated pact file should match with the snapshot', () => {
-    const pactFile = pact.generatePactFile()
-    cy.fixture('test-consumer-rest-provider.json').then((expectedPact) => {
-      expect(omitVersion(pactFile)).to.deep.equal(
-        omitVersion(expectedPact, false),
-      )
+  describe('pact metadata', () => {
+    it('the generated pact metadata should match the configuration', () => {
+      cy.then(() => {
+        const todoPact = pactRegistry.get('todo-service')
+        expect(todoPact, 'todo-service pact exists').to.exist
+        if (!todoPact) {
+          return
+        }
+        const generatedTodo = todoPact.generatePactFile()
+        return cy
+          .fixture('test-consumer-todo-service.json')
+          .then((expectedPact) => {
+            expect(omitVersion(generatedTodo)).to.deep.equal(
+              omitVersion(expectedPact, false),
+            )
+          })
+      })
+
+      cy.then(() => {
+        const userPact = pactRegistry.get('user-service')
+        expect(userPact, 'user-service pact exists').to.exist
+        if (!userPact) {
+          return
+        }
+        const generatedUser = userPact.generatePactFile()
+        return cy
+          .fixture('test-consumer-user-service.json')
+          .then((expectedPact) => {
+            expect(omitVersion(generatedUser)).to.deep.equal(
+              omitVersion(expectedPact, false),
+            )
+          })
+      })
     })
   })
 })

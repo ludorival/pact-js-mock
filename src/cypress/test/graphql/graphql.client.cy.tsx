@@ -8,21 +8,18 @@ import {
   createTodoWillSucceed,
   emptyTodos,
   multipleTodos,
-  pact,
   todoByIdFound,
   todoByIdNotFound,
   todosWillRaiseTechnicalFailure,
 } from './handlers'
 import { omitVersion } from '../../../test/utils'
-
-// Register the pact instance - lifecycle hooks are handled automatically
-cy.registerPact(pact)
+import { pactRegistry } from '../../registry'
 
 describe('To-Do list GraphQL API client', () => {
   describe('fetchTodos', () => {
     it('should fetch all To-Do items', () => {
       // use multipleTodos handlers from contracts
-      cy.intercept('POST', `/graphql`, multipleTodos).as('multipleTodos')
+      cy.pactIntercept('POST', `/graphql`, multipleTodos).as('multipleTodos')
 
       // Mount the TodoList to fetchTodos function and get the actual data
       mount(<TodoList {...props} />)
@@ -33,6 +30,9 @@ describe('To-Do list GraphQL API client', () => {
         .its('body')
         .its('data.todos')
         .should('have.length', 3)
+      cy.then(() => {
+        expect(pactRegistry.getAll()[0].providerName).to.equal('graphql')
+      })
     })
 
     it('should get a technical failure the first time and an empty todo list', () => {
@@ -40,7 +40,7 @@ describe('To-Do list GraphQL API client', () => {
         return false // ignore
       })
       // use todosWillRaiseTechnicalFailure and emptyTodos handlers from contracts
-      cy.intercept('POST', `/graphql`, todosWillRaiseTechnicalFailure).as(
+      cy.pactIntercept('POST', `/graphql`, todosWillRaiseTechnicalFailure).as(
         'todosWillRaiseTechnicalFailure',
       )
       // Mount the TodoList to fetchTodos function and get the actual data
@@ -51,7 +51,7 @@ describe('To-Do list GraphQL API client', () => {
         .its('statusCode')
         .should('be.equal', 500)
 
-      cy.intercept('POST', `/graphql`, emptyTodos).as('emptyTodos')
+      cy.pactIntercept('POST', `/graphql`, emptyTodos).as('emptyTodos')
       // Reload the fetch
       cy.get('#reload').click()
 
@@ -65,7 +65,7 @@ describe('To-Do list GraphQL API client', () => {
   describe('createTodo', () => {
     it('should create a new To-Do item', () => {
       // use createTodoWillSucceed handlers from contracts
-      cy.intercept('POST', `/graphql`, createTodoWillSucceed).as(
+      cy.pactIntercept('POST', `/graphql`, createTodoWillSucceed).as(
         'createTodoWillSucceed',
       )
 
@@ -90,7 +90,7 @@ describe('To-Do list GraphQL API client', () => {
   describe('todoById', () => {
     it('should get a todo by its id', () => {
       // use todoByIdFound handlers from contracts
-      cy.intercept('POST', `/graphql`, todoByIdFound).as('todoByIdFound')
+      cy.pactIntercept('POST', `/graphql`, todoByIdFound).as('todoByIdFound')
 
       // mount the TodoDetails and get the actual data
       mount(<TodoDetails id="1" {...props} />)
@@ -108,7 +108,9 @@ describe('To-Do list GraphQL API client', () => {
         return false // ignore
       })
       // use todoByIdFound handlers from contracts
-      cy.intercept('POST', `/graphql`, todoByIdNotFound).as('todoByIdNotFound')
+      cy.pactIntercept('POST', `/graphql`, todoByIdNotFound).as(
+        'todoByIdNotFound',
+      )
 
       // mount the TodoDetails and get the actual data
       mount(<TodoDetails id="1" {...props} />)
@@ -120,12 +122,18 @@ describe('To-Do list GraphQL API client', () => {
         .should('deep.equal', [{ message: 'The todo item 1 is not found' }])
     })
   })
-  it('the generated pact file should match with the snapshot', () => {
-    const pactFile = pact.generatePactFile()
-    cy.fixture('test-consumer-graphql-provider.json').then((expectedPact) => {
-      expect(omitVersion(pactFile)).to.deep.equal(
-        omitVersion(expectedPact, false),
-      )
+  describe('pact metadata', () => {
+    it('the generated pact metadata should match the configuration', () => {
+      cy.then(() => {
+        const pactFile = pactRegistry.getAll()[0].generatePactFile()
+        expect(pactFile.consumer.name).to.equal('test-consumer')
+        expect(pactFile.provider.name).to.equal('graphql')
+        return cy.fixture('test-consumer-graphql.json').then((expectedPact) => {
+          expect(omitVersion(pactFile)).to.deep.equal(
+            omitVersion(expectedPact, false),
+          )
+        })
+      })
     })
   })
 })

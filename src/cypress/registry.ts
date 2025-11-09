@@ -1,20 +1,12 @@
-import { Pact } from '../core'
+import { createConfiguredPact, Pact } from './pact'
 import { PactFile } from '../types'
 
 /**
  * Registry for managing Pact instances in Cypress tests
  */
 class PactRegistry {
-  private defaultPact: Pact<PactFile> | null = null
   private namedPacts: Map<string, Pact<PactFile>> = new Map()
   private testPacts: Map<string, Pact<PactFile>> = new Map()
-
-  /**
-   * Register a default Pact instance
-   */
-  registerDefault(pact: Pact<PactFile>): void {
-    this.defaultPact = pact
-  }
 
   /**
    * Register a named Pact instance
@@ -24,17 +16,19 @@ class PactRegistry {
   }
 
   /**
-   * Get the default Pact instance
-   */
-  getDefault(): Pact<PactFile> | null {
-    return this.defaultPact
-  }
-
-  /**
    * Get a named Pact instance
    */
   get(name: string): Pact<PactFile> | null {
     return this.namedPacts.get(name) || null
+  }
+
+  getOrCreate(name: string): Pact<PactFile> {
+    if (this.namedPacts.has(name)) {
+      return this.namedPacts.get(name) as Pact<PactFile>
+    }
+    const pact = createConfiguredPact(name)
+    this.namedPacts.set(name, pact)
+    return pact
   }
 
   /**
@@ -44,7 +38,7 @@ class PactRegistry {
     if (this.testPacts.has(testTitle)) {
       return this.testPacts.get(testTitle) || null
     }
-    return this.defaultPact
+    return null
   }
 
   /**
@@ -58,7 +52,6 @@ class PactRegistry {
    * Clear all registered pacts (useful for cleanup)
    */
   clear(): void {
-    this.defaultPact = null
     this.namedPacts.clear()
     this.testPacts.clear()
   }
@@ -68,9 +61,6 @@ class PactRegistry {
    */
   getAll(): Pact<PactFile>[] {
     const pacts: Pact<PactFile>[] = []
-    if (this.defaultPact) {
-      pacts.push(this.defaultPact)
-    }
     this.namedPacts.forEach((pact) => pacts.push(pact))
     return pacts
   }

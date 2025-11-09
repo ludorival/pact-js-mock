@@ -2,13 +2,14 @@
 
 ## Executive Summary
 
-This plan outlines a comprehensive simplification of the Cypress integration for `pact-js-mock`. The goal is to reduce setup complexity from 4+ manual steps to a single import, eliminate boilerplate lifecycle hooks, and provide a more intuitive API.
+This plan outlines a focused simplification of the Cypress integration for `pact-js-mock`. The goal is to keep setup minimal (support import + optional plugin), streamline the command surface, and automate pact metadata (consumer, provider, version) without extra boilerplate. The changes will ship in the next major release and therefore replace the legacy Cypress entry points.
 
 **Key Improvements**:
-- **90% reduction in setup code**: Single import replaces multiple configuration steps
-- **Zero boilerplate**: Automatic lifecycle management eliminates 3 hooks per test file
-- **Simpler API**: New `cy.pactIntercept()` command combines intercept + pact recording
-- **Backward compatible**: Old API continues to work with deprecation warnings
+
+- **Single support import**: `src/cypress/setup.ts` registers commands and lifecycle hooks in one place.
+- **Plugin stays opt-in**: `src/cypress/plugin.ts` remains the dedicated Node entry without leaking into browser bundles.
+- **Simpler API**: `cy.pactIntercept()` replaces manual `cy.intercept()` + `pact.toHandler()` usage.
+- **Automatic metadata**: Consumer name and pact version come from Cypress config (defaulting to the host package) and provider names are inferred from intercepted URLs.
 
 **Estimated Implementation Time**: 10-14 days
 
@@ -16,295 +17,248 @@ This plan outlines a comprehensive simplification of the Cypress integration for
 
 ### Current Complexity Points
 
-1. **Manual Setup Required**:
-   - Import commands in `cypress/support/commands.ts`
-   - Configure plugin in `cypress.config.ts`
-   - Manual lifecycle hook management (`before`, `beforeEach`, `after`)
+1. **Fragmented setup**:
+   - Commands/lifecycle must be wired manually in support files
+   - Plugin registration can accidentally ship to the browser bundle
 
-2. **Boilerplate in Every Test File**:
-   ```typescript
-   before(() => {
-     cy.reloadPact(pact)
-   })
-   
-   beforeEach(() => {
-     pact.setCurrentSource(Cypress.currentTest.title)
-   })
-   
-   after(() => {
-     cy.writePact(pact)
-   })
-   ```
+2. **Boilerplate in every spec**:
+   - Repeated lifecycle hooks (`before`, `beforeEach`, `after`)
+   - Manual pact registration per test file
 
-3. **Complex API Usage**:
-   - Users must understand `pact.toHandler()` method
-   - Manual `cy.intercept()` + `pact.toHandler()` combination
-   - Need to understand internal mechanics (reload, write, source tracking)
+3. **Metadata friction**:
+   - Consumer/provider names must be manually supplied
+   - No centralized opt-in for pact version overrides
 
-4. **Plugin Configuration**:
-   - Manual plugin import and setup
-   - Need to understand Cypress plugin architecture
+4. **Cypress API mismatch**:
+   - `cy.intercept()` requires explicit `pact.toHandler()` chaining
+   - Users must remember to call both pieces correctly
 
 ## Goals
 
-1. **Reduce Setup Complexity**: Single import should configure everything
-2. **Eliminate Boilerplate**: Auto-manage lifecycle hooks
-3. **Simplify API**: More intuitive commands that combine common patterns
-4. **Better Developer Experience**: Less configuration, more convention
+1. **Single support entry point**: One import (`src/cypress/setup.ts`) registers commands and lifecycle hooks.
+2. **Keep plugin separate**: `src/cypress/plugin.ts` remains Node-only and optional.
+3. **Rename intercept API**: `cy.pactIntercept()` becomes the primary DX-friendly wrapper.
+4. **Automate metadata**: Consumer name/version come from Cypress config (defaulting to host package) and provider names are inferred from requests.
 
 ## Proposed Solution
 
-### Phase 1: Auto-Setup Mechanism
+### Phase 1: Core Auto-Setup
 
-#### 1.1 Auto-Configure Commands and Plugin
-- Create a single entry point that auto-registers commands and plugin
-- Users only need: `import 'pact-js-mock/lib/cypress'` in their support file
-- Auto-detect and configure plugin in `cypress.config.ts` via helper
+- Keep `src/cypress/setup.ts` as the single support import that registers commands and lifecycle hooks.
+- Guard the setup so it never imports Node-only modules (e.g., `fs`), keeping the browser bundle clean.
+- Maintain a light-weight registry so specs can register a pact once (default or named) and reuse it across tests.
 
-**Files to Create/Modify**:
-- `src/cypress/index.ts` - Enhanced to auto-register commands
-- `src/cypress/setup.ts` - New file for auto-setup logic
-- `src/cypress/config-helper.ts` - Helper to modify cypress.config.ts
+### Phase 2: Simplified Command API
 
-#### 1.2 Lifecycle Auto-Management
-- Automatically handle `before`, `beforeEach`, `after` hooks
-- Track pact instances automatically
-- Auto-set test source from `Cypress.currentTest.title`
+- Finalize `cy.pactIntercept()` as the ergonomic wrapper over `cy.intercept()`, keeping the same chaining semantics (e.g., `.as()`).
+- Preserve `cy.registerPact()` to support default/named pact usage, but ensure the default path covers most scenarios.
+- Surface the advanced overloads so tests can pass full interaction objects (description, provider states, matching rules, etc.) when needed.
+- Keep the plugin as an optional import (`pact-js-mock/lib/cypress/plugin`) for teams that still manage pact files manually.
 
-**Implementation**:
-- Use Cypress hooks API to register lifecycle handlers automatically
-- Maintain internal registry of pact instances
-- Auto-cleanup and write pacts after tests
+### Phase 3: Metadata Automation
 
-### Phase 2: Simplified API
+- Read consumer name and optional pact specification version from Cypress config (`config.env.pact`), defaulting to the host package’s `name` and `version`.
+- Infer provider names from intercepted URLs (e.g., `/order-service/v1/api` ⇒ `order-service`) with safe fallbacks and override hooks.
+- Ensure every recorded interaction automatically includes the inferred metadata without extra user code.
 
-#### 2.1 New `cy.pactIntercept()` Command
-Combine `cy.intercept()` + `pact.toHandler()` into a single command:
+### Phase 4: Documentation and Examples
 
-```typescript
-// Current (complex):
-cy.intercept('GET', '/api/todos', pact.toHandler({
-  description: 'get todos',
-  response: { status: 200, body: [] }
-})).as('getTodos')
-
-// Proposed (simplified):
-cy.pactIntercept('GET', '/api/todos', {
-  description: 'get todos',
-  response: { status: 200, body: [] }
-}).as('getTodos')
-```
-
-**Benefits**:
-- Less verbose
-- More intuitive
-- Automatically uses the registered pact instance
-
-#### 2.2 Pact Instance Registration
-- Allow registering a default pact instance globally
-- Support multiple pacts with namespacing
-- Auto-select pact based on context
-
-**API Design**:
-```typescript
-// In support file or config:
-cy.registerPact(pact) // Register default
-cy.registerPact('rest-api', pact) // Register named pact
-
-// In tests:
-cy.pactIntercept('GET', '/api/todos', {...}) // Uses default
-cy.pactIntercept('rest-api', 'GET', '/api/todos', {...}) // Uses named
-```
-
-### Phase 3: Configuration Simplification
-
-#### 3.1 Configuration Helper
-Provide a helper function to simplify `cypress.config.ts` setup:
-
-```typescript
-// Current:
-import pactPlugin from 'pact-js-mock/lib/cypress/plugin'
-export default defineConfig({
-  setupNodeEvents(on, config) {
-    return pactPlugin(on, config)
-  }
-})
-
-// Proposed:
-import { withPact } from 'pact-js-mock/lib/cypress'
-export default withPact(defineConfig({
-  // ... other config
-}))
-```
-
-#### 3.2 Smart Defaults
-- Auto-detect pact files location
-- Sensible default output directory
-- Auto-cleanup old pact files if needed
-
-### Phase 4: Enhanced Features
-
-#### 4.1 Test Context Awareness
-- Automatically track which test created which interactions
-- Better error messages with test context
-- Support for test grouping/namespacing
-
-#### 4.2 Pact File Management
-- Auto-merge interactions from multiple test files
-- Better conflict resolution
-- Support for parallel test execution
-
-#### 4.3 Developer Experience Improvements
-- Better TypeScript types and autocomplete
-- Clearer error messages
-- Debug mode for troubleshooting
+- Update example specs under `src/cypress/test` to rely solely on the support import plus optional config overrides.
+- Refresh README/migration guidance to describe the simplified flow (support import, optional plugin, `cy.pactIntercept()` usage, metadata defaults).
+- Document provider inference rules, consumer overrides, and advanced usage patterns.
 
 ## Implementation Plan
 
-### Step 1: Create Auto-Setup Infrastructure
+### Step 1: Harden Auto-Setup
+
 **Files**:
-- `src/cypress/setup.ts` - Main setup logic
-- `src/cypress/registry.ts` - Pact instance registry
-- `src/cypress/lifecycle.ts` - Lifecycle hook management
+
+- `src/cypress/setup.ts`
+- `src/cypress/registry.ts`
+- `src/cypress/lifecycle.ts`
 
 **Tasks**:
-- [ ] Implement pact instance registry
-- [ ] Create auto-lifecycle hook registration
-- [ ] Add automatic command registration
-- [ ] Write tests for setup logic
 
-### Step 2: Implement Simplified Commands
+- [ ] Ensure setup import is idempotent and browser-safe
+- [ ] Keep lifecycle hooks minimal (register once, reuse across specs)
+- [ ] Confirm registry supports default and named pact registration
+
+### Step 2: Finalize Command API
+
 **Files**:
-- `src/cypress/commands.ts` - Enhanced with new commands
-- `src/cypress/types.ts` - Updated type definitions
+
+- `src/cypress/commands.ts`
+- `src/cypress/types.ts`
 
 **Tasks**:
-- [ ] Implement `cy.pactIntercept()` command
-- [ ] Implement `cy.registerPact()` command
-- [ ] Update TypeScript definitions
-- [ ] Write tests for new commands
 
-### Step 3: Create Configuration Helpers
+- [ ] Align `cy.pactIntercept()` signature/chainability with `cy.intercept()`
+- [ ] Ensure `cy.registerPact()` uses the registry + config metadata
+- [ ] Update type definitions and add smoke coverage
+
+### Step 3: Implement Metadata Defaults
+
 **Files**:
-- `src/cypress/config-helper.ts` - Configuration utilities
+
+- `cypress.config.ts` (docs/examples)
+- `src/cypress/types.ts`
+- `src/cypress/utils` (new helper if required)
 
 **Tasks**:
-- [ ] Implement `withPact()` wrapper
-- [ ] Create auto-configuration detection
-- [ ] Add configuration validation
-- [ ] Write documentation
 
-### Step 4: Update Documentation and Examples
+- [ ] Read consumer name/version from `config.env.pact`, fallback to package.json
+- [ ] Implement provider-name inference helper with override capability
+- [ ] Pipe metadata into interaction recording automatically
+
+### Step 4: Documentation & Examples
+
 **Files**:
-- `README.md` - Update Cypress section
-- `src/cypress/test/` - Update example tests
+
+- `README.md`
+- `MIGRATION_GUIDE.md`
+- `src/cypress/test/`
 
 **Tasks**:
-- [ ] Rewrite Cypress getting started guide
-- [ ] Update example test files
-- [ ] Create migration guide from old API
-- [ ] Add troubleshooting section
 
-### Step 5: Backward Compatibility
-**Tasks**:
-- [ ] Ensure old API still works (deprecated)
-- [ ] Add deprecation warnings
-- [ ] Create migration path documentation
-- [ ] Maintain plugin and commands exports for compatibility
+- [ ] Update getting started guide to highlight minimal setup (support import + optional config)
+- [ ] Adjust example specs to rely on inferred metadata instead of manual pact files
+- [ ] Document override mechanisms, advanced `cy.pactIntercept()` usage (full interactions, matching rules), and plugin usage for power users
 
 ## Migration Path
 
 ### For Existing Users
 
-1. **Gradual Migration**:
-   - Old API continues to work
-   - New API available alongside
-   - Deprecation warnings guide migration
+1. **Breaking Upgrade**:
+   - Legacy command/plugin imports are removed in this major release.
+   - Tests must adopt the new support import and `cy.pactIntercept()` API.
+   - Cypress config overrides (`config.env.pact`) remain optional but provide metadata control.
 
 2. **Migration Steps**:
+
    ```typescript
-   // Step 1: Replace manual setup with auto-setup
-   // OLD: import 'pact-js-mock/lib/cypress/commands'
-   // NEW: import 'pact-js-mock/lib/cypress'
-   
-   // Step 2: Remove lifecycle hooks
-   // OLD: before(() => cy.reloadPact(pact))
-   // NEW: (automatically handled)
-   
-   // Step 3: Use new command
-   // OLD: cy.intercept(..., pact.toHandler(...))
-   // NEW: cy.pactIntercept(..., {...})
+   // Step 1: Import the simplified setup once in support
+   import 'pact-js-mock/lib/cypress'
+
+   // Step 2: (Optional) add pact metadata overrides
+   // cypress.config.ts
+   export default defineConfig({
+     env: {
+       pact: {
+         consumerName: 'my-consumer',
+         pactVersion: '2.0.0',
+       },
+     },
+   })
+
+   // Step 3: Use the new command in specs
+   cy.pactIntercept('GET', '/order-service/v1/api/orders', {...})
+   // provider inferred as "order-service"
    ```
 
 ## API Comparison
 
 ### Current API (Complex)
+
 ```typescript
-// Setup
+// support/component.ts
 import 'pact-js-mock/lib/cypress/commands'
+
+// cypress.config.ts
 import pactPlugin from 'pact-js-mock/lib/cypress/plugin'
+export default defineConfig({
+  component: {
+    setupNodeEvents(on, config) {
+      return pactPlugin(on, config)
+    },
+  },
+})
 
-// Config
-setupNodeEvents(on, config) {
-  return pactPlugin(on, config)
-}
-
-// Test file
+// Spec file
 before(() => cy.reloadPact(pact))
 beforeEach(() => pact.setCurrentSource(Cypress.currentTest.title))
 after(() => cy.writePact(pact))
 
-cy.intercept('GET', '/api/todos', pact.toHandler({
-  description: 'get todos',
-  response: { status: 200, body: [] }
-}))
+cy.intercept(
+  'GET',
+  '/order-service/v1/api/orders',
+  pact.toHandler({
+    description: 'get orders',
+    response: { status: 200, body: [] },
+  }),
+)
 ```
 
 ### Proposed API (Simple)
+
 ```typescript
-// Setup (one import)
+// support/component.ts
 import 'pact-js-mock/lib/cypress'
 
-// Config (optional helper)
-import { withPact } from 'pact-js-mock/lib/cypress'
-export default withPact(defineConfig({...}))
-
-// Test file (no lifecycle hooks needed)
-cy.registerPact(pact) // Once, or in support file
-
-cy.pactIntercept('GET', '/api/todos', {
-  description: 'get todos',
-  response: { status: 200, body: [] }
+// cypress.config.ts (optional overrides)
+export default defineConfig({
+  env: {
+    pact: { consumerName: 'web-app', pactVersion: '2.0.0' },
+  },
 })
+
+// Spec file
+cy.registerPact(pact) // once per file or via support
+
+// Simple usage (response body only)
+cy.pactIntercept('GET', '/order-service/v1/api/orders', [
+  { id: '1', status: 'READY' },
+])
+
+// Advanced usage (custom interaction)
+cy.pactIntercept('GET', '/order-service/v1/api/orders', {
+  description: 'get orders',
+  providerState: 'orders exist',
+  response: {
+    status: 200,
+    body: [{ id: '1', status: 'READY' }],
+    matchingRules: {
+      '$.body[0].status': { match: 'regex', regex: 'READY|PENDING' },
+    },
+  },
+})
+// provider inferred as "order-service"
 ```
 
 ## Success Metrics
 
-1. **Reduced Setup Steps**: From 4+ manual steps to 1 import
-2. **Less Boilerplate**: Eliminate 3 lifecycle hooks per test file
-3. **Simpler API**: Single command instead of command + method chain
-4. **Better DX**: Clearer errors, better TypeScript support
+1. **Setup simplicity**: Single support import + optional config cover mainstream usage.
+2. **Zero manual metadata**: Consumer/provider defaults populate automatically.
+3. **API clarity**: `cy.pactIntercept()` mirrors Cypress ergonomics.
+4. **Upgrade clarity**: Migration steps clearly outline breaking changes and required updates.
 
 ## Risks and Mitigations
 
-### Risk 1: Breaking Changes
-**Mitigation**: Maintain backward compatibility, gradual deprecation
+### Risk 1: Missing metadata overrides
 
-### Risk 2: Hidden Complexity
-**Mitigation**: Clear documentation, debug mode, explicit opt-out
+**Mitigation**: Provide explicit config shape (`config.env.pact`) and document how to override per project/spec.
 
-### Risk 3: Performance Impact
-**Mitigation**: Lazy initialization, efficient registry, minimal overhead
+### Risk 2: Provider inference edge cases
 
-### Risk 4: Cypress Version Compatibility
-**Mitigation**: Test against multiple Cypress versions, clear version requirements
+**Mitigation**: Allow manual overrides, add safe fallbacks, and surface debug logging or warnings.
+
+### Risk 3: Browser bundle pollution
+
+**Mitigation**: Keep plugin/Node code behind separate imports; add tests preventing accidental `fs` usage in the browser path.
+
+### Risk 4: Cypress compatibility
+
+**Mitigation**: Validate against supported Cypress versions and document minimum requirements.
+
+### Risk 5: Upgrade friction for existing users
+
+**Mitigation**: Provide clear migration guides, codemod examples where feasible, and communicate breaking changes in release notes.
 
 ## Timeline Estimate
 
-- **Phase 1** (Auto-Setup): 2-3 days
-- **Phase 2** (Simplified API): 2-3 days
-- **Phase 3** (Configuration): 1-2 days
-- **Phase 4** (Enhancements): 2-3 days
+- **Phase 1** (Core Auto-Setup): 2-3 days
+- **Phase 2** (Command API): 2-3 days
+- **Phase 3** (Metadata Defaults): 1-2 days
+- **Phase 4** (Docs & Examples): 2-3 days
 - **Testing & Documentation**: 2-3 days
 
 **Total**: ~10-14 days
@@ -313,8 +267,8 @@ cy.pactIntercept('GET', '/api/todos', {
 
 1. Review and approve this plan
 2. Create feature branch
-3. Implement Phase 1 (Auto-Setup)
+3. Implement Phase 1 (Core Auto-Setup)
 4. Get feedback on Phase 1 before proceeding
 5. Iterate through remaining phases
 6. Update documentation
-7. Release as minor version (backward compatible)
+7. Release as major version (breaking changes documented)

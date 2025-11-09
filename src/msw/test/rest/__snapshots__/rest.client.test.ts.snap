@@ -5,6 +5,7 @@ exports[`To-Do list Rest API client createTodo should create a new To-Do item 1`
   "completed": false,
   "description": "Milk, bread, eggs, cheese",
   "id": "1",
+  "ownerId": "user-1",
   "title": "Buy groceries",
 }
 `;
@@ -15,18 +16,21 @@ exports[`To-Do list Rest API client fetchTodos should fetch all To-Do items 1`] 
     "completed": false,
     "description": "Milk, bread, eggs, cheese",
     "id": "1",
+    "ownerId": "user-1",
     "title": "Buy groceries",
   },
   {
     "completed": true,
     "description": "",
     "id": "2",
+    "ownerId": "user-2",
     "title": "Do laundry",
   },
   {
     "completed": false,
     "description": "Fix leaky faucet in the bathroom",
     "id": "3",
+    "ownerId": "user-3",
     "title": "Call plumber",
   },
 ]
@@ -37,6 +41,7 @@ exports[`To-Do list Rest API client todoById should get a todo by its id 1`] = `
   "completed": false,
   "description": "Milk, bread, eggs, cheese",
   "id": "1",
+  "ownerId": "user-1",
   "title": "Buy groceries",
 }
 `;
@@ -48,12 +53,12 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
   },
   "interactions": [
     {
-      "description": "GET /api/todos returns status 200",
+      "description": "GET /todo-service/todos returns status 200",
       "request": {
         "body": null,
         "headers": {},
         "method": "GET",
-        "path": "/api/todos",
+        "path": "/todos",
         "query": "all=true",
       },
       "response": {
@@ -62,18 +67,21 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
             "completed": false,
             "description": "Milk, bread, eggs, cheese",
             "id": "1",
+            "ownerId": "user-1",
             "title": "Buy groceries",
           },
           {
             "completed": true,
             "description": "",
             "id": "2",
+            "ownerId": "user-2",
             "title": "Do laundry",
           },
           {
             "completed": false,
             "description": "Fix leaky faucet in the bathroom",
             "id": "3",
+            "ownerId": "user-3",
             "title": "Call plumber",
           },
         ],
@@ -87,7 +95,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
         "body": null,
         "headers": {},
         "method": "GET",
-        "path": "/api/todos",
+        "path": "/todos",
         "query": "all=true",
       },
       "response": {
@@ -100,7 +108,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
         "body": null,
         "headers": {},
         "method": "GET",
-        "path": "/api/todos",
+        "path": "/todos",
         "query": "all=true",
       },
       "response": {
@@ -118,7 +126,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
           "content-type": "application/json",
         },
         "method": "POST",
-        "path": "/api/todos",
+        "path": "/todos",
         "query": undefined,
       },
       "response": {
@@ -126,6 +134,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
           "completed": false,
           "description": "Milk, bread, eggs, cheese",
           "id": "1",
+          "ownerId": "user-1",
           "title": "Buy groceries",
         },
         "status": 201,
@@ -138,7 +147,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
         "body": null,
         "headers": {},
         "method": "GET",
-        "path": "/api/todos/1",
+        "path": "/todos/1",
         "query": undefined,
       },
       "response": {
@@ -146,6 +155,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
           "completed": false,
           "description": "Milk, bread, eggs, cheese",
           "id": "1",
+          "ownerId": "user-1",
           "title": "Buy groceries",
         },
         "status": 200,
@@ -157,7 +167,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
         "body": null,
         "headers": {},
         "method": "GET",
-        "path": "/api/todos/1",
+        "path": "/todos/1",
         "query": undefined,
       },
       "response": {
@@ -177,7 +187,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
     },
   },
   "provider": {
-    "name": "rest-provider",
+    "name": "todo-service",
   },
 }
 `;

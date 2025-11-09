@@ -23,7 +23,7 @@ export class Pact<T extends PactFile = PactV2.PactFile> {
   private interactions: InteractionFor<T>[] = []
   private currentSource: string | undefined
   constructor(
-    private pact: InputPact<T>,
+    protected pact: InputPact<T>,
     private options?: Options,
   ) {
     if (!pact.metadata?.pactSpecification?.version)
@@ -39,8 +39,19 @@ export class Pact<T extends PactFile = PactV2.PactFile> {
     return this.pact.metadata?.pactSpecification?.version || '2.0.0'
   }
 
+  public get providerName(): string {
+    return this.pact.provider?.name ?? ''
+  }
+
   public setCurrentSource(source: string | undefined) {
     this.currentSource = source
+  }
+
+  protected setProviderName(name: string) {
+    this.pact = {
+      ...this.pact,
+      provider: { ...(this.pact.provider || {}), name },
+    }
   }
 
   public get fileName(): string {

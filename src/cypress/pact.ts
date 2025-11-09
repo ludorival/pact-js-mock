@@ -15,6 +15,7 @@ import {
   PactV4,
   ToRecordInteraction,
 } from '../types'
+import { resolvePactEnvironment } from './runtime-config'
 
 type Request = PactV2.Request | PactV3.Request | PactV4.Request
 export class Pact<P extends PactFile> extends BasePact<P> {
@@ -59,6 +60,33 @@ export class Pact<P extends PactFile> extends BasePact<P> {
       headers: responseV4?.headers || response?.headers,
     }
   }
+}
+
+export function createConfiguredPact(
+  providerName: string,
+  options?: Options,
+): Pact<PactFile> {
+  const {
+    consumerName,
+    pactVersion,
+    outputDir,
+    options: envOptions,
+  } = resolvePactEnvironment()
+  const pactDefinition = {
+    consumer: { name: consumerName },
+    provider: { name: providerName },
+    metadata: {
+      pactSpecification: { version: pactVersion },
+    },
+  } as InputPact<PactFile>
+
+  const pactOptions = {
+    ...envOptions,
+    ...options,
+    ...(outputDir ? { outputDir } : {}),
+  } as Options | undefined
+
+  return new Pact(pactDefinition, pactOptions)
 }
 
 function toRequest(req: CyHttpMessages.IncomingHttpRequest): Request {
