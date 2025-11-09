@@ -15,4 +15,4 @@
 
 // Import pact-js-mock Cypress integration (auto-setup)
 // This automatically registers commands and lifecycle hooks
-import 'pact-js-mock/lib/cypress'
+import '../../src/cypress'

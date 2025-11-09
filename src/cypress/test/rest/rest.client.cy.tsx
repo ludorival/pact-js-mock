@@ -14,17 +14,8 @@ import {
 } from './handlers'
 import { omitVersion } from '../../../test/utils'
 
-before(() => {
-  cy.reloadPact(pact)
-})
-
-beforeEach(() => {
-  pact.setCurrentSource(Cypress.currentTest.title)
-})
-
-after(() => {
-  cy.writePact(pact)
-})
+// Register the pact instance - lifecycle hooks are handled automatically
+cy.registerPact(pact)
 
 describe('To-Do list Rest API client', () => {
   describe('fetchTodos', () => {
