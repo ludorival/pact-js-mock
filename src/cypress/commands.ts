@@ -1,11 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type from 'cypress'
-import type {
-  CyHttpMessages,
-  RouteHandlerController,
-  StaticResponse,
-} from 'cypress/types/net-stubbing'
-import { Pact } from '../core'
 import {
   InteractionFor,
   MinimalInteraction,
@@ -19,8 +13,6 @@ import { Pact as CypressPact } from './pact'
 declare global {
   namespace Cypress {
     interface Chainable {
-      writePact<P extends PactFile>(pact: Pact<P>): Chainable<void>
-      reloadPact<P extends PactFile>(pact: Pact<P>): Chainable<void>
       /**
        * Register a Pact instance for use in tests
        * @param pactOrName - Either a Pact instance (for default) or a name string
@@ -31,40 +23,39 @@ declare global {
         pact?: CypressPact<P>,
       ): Chainable<void>
       /**
-       * Intercept HTTP requests and record them as Pact interactions
+       * Intercept HTTP requests and record them as Pact interactions.
+       * 
+       * Simplest usage - just pass the response body:
+       * cy.pactIntercept('POST', '/order-service/v1/order', { id: 123 })
+       * 
+       * For custom interactions (description, provider states, matching rules):
+       * cy.pactIntercept('POST', '/order-service/v1/order', {
+       *   description: 'create order',
+       *   providerState: 'order service is available',
+       *   response: { status: 201, body: { id: 123 } }
+       * })
+       * 
        * @param method - HTTP method (GET, POST, etc.)
        * @param url - URL pattern to intercept
-       * @param interaction - Interaction definition or response body
-       * @param pactName - Optional name of registered pact (uses default if not provided)
+       * @param responseOrInteraction - Response body (simple usage) or full interaction object (advanced usage)
        * @returns Chainable that can be used with .as() for aliasing
        */
-      pactIntercept<P extends PactFile>(
+      pactIntercept(
         method: string,
         url: string | RegExp,
-        interaction: MinimalInteraction<InteractionFor<P>> | unknown,
-        pactName?: string,
+        responseOrInteraction: unknown | MinimalInteraction<InteractionFor<PactFile>>,
       ): Chainable
       /**
-       * Overload for named pact: pactIntercept(pactName, method, url, interaction)
+       * Overload for named pact: pactIntercept(pactName, method, url, responseOrInteraction)
        */
-      pactIntercept<P extends PactFile>(
+      pactIntercept(
         pactName: string,
         method: string,
         url: string | RegExp,
-        interaction: MinimalInteraction<InteractionFor<P>> | unknown,
+        responseOrInteraction: unknown | MinimalInteraction<InteractionFor<PactFile>>,
       ): Chainable
     }
   }
-}
-
-function writePact<P extends PactFile>(pact: Pact<P>): void {
-  cy.writeFile(pact.fileName, pact.generatePactFile())
-}
-
-function reloadPact<P extends PactFile>(pact: Pact<P>) {
-  cy.task('readPact', pact.fileName).then((pactFile) =>
-    pact.reset(pactFile as P),
-  )
 }
 
 function registerPact<P extends PactFile>(
@@ -85,29 +76,29 @@ function registerPact<P extends PactFile>(
   }
 }
 
-function pactIntercept<P extends PactFile>(
+function pactIntercept(
   arg1: string,
   arg2: string | RegExp,
-  arg3: string | MinimalInteraction<InteractionFor<P>> | unknown,
-  arg4?: MinimalInteraction<InteractionFor<P>> | unknown,
+  arg3: unknown | MinimalInteraction<InteractionFor<PactFile>>,
+  arg4?: unknown | MinimalInteraction<InteractionFor<PactFile>>,
 ): Cypress.Chainable {
   let pactName: string | undefined
   let method: string
   let url: string | RegExp
-  let interaction: MinimalInteraction<InteractionFor<P>> | unknown
+  let responseOrInteraction: unknown | MinimalInteraction<InteractionFor<PactFile>>
 
   // Determine which overload is being used
   if (arg4 !== undefined) {
-    // Named pact: pactIntercept(pactName, method, url, interaction)
+    // Named pact: pactIntercept(pactName, method, url, responseOrInteraction)
     pactName = arg1
     method = arg2 as string
     url = arg3 as string | RegExp
-    interaction = arg4
+    responseOrInteraction = arg4
   } else {
-    // Default pact: pactIntercept(method, url, interaction)
+    // Default pact: pactIntercept(method, url, responseOrInteraction)
     method = arg1
     url = arg2
-    interaction = arg3
+    responseOrInteraction = arg3
   }
 
   // Get the appropriate pact instance
@@ -123,14 +114,13 @@ function pactIntercept<P extends PactFile>(
     )
   }
 
-  // Convert interaction to handler
-  const handler = (pactInstance as CypressPact<P>).toHandler(interaction)
+  // Convert response/interaction to handler
+  // toHandler() automatically handles both simple response bodies and full interaction objects
+  const handler = pactInstance.toHandler(responseOrInteraction)
 
   // Use cy.intercept with the handler and return the chainable
   return cy.intercept(method, url, handler)
 }
 
-Cypress.Commands.add('writePact', writePact)
-Cypress.Commands.add('reloadPact', reloadPact)
 Cypress.Commands.add('registerPact', registerPact)
 Cypress.Commands.add('pactIntercept', pactIntercept)

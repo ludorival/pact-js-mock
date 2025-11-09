@@ -4,8 +4,8 @@
  * This demonstrates:
  * 1. Single import for auto-setup
  * 2. No lifecycle hooks needed (automatically handled)
- * 3. Simplified cy.pactIntercept() command
- * 4. Automatic pact registration
+ * 3. Simplest usage: cy.pactIntercept() works just like cy.intercept() but with automatic pact recording
+ * 4. Advanced usage: Custom interactions with description, provider states, etc.
  */
 
 import 'pact-js-mock/lib/cypress' // Auto-setup: registers commands and lifecycle hooks
@@ -24,33 +24,27 @@ cy.registerPact(pact)
 describe('To-Do list Rest API client (Simplified API)', () => {
   describe('fetchTodos', () => {
     it('should fetch all To-Do items', () => {
-      // NEW: Simplified cy.pactIntercept() instead of cy.intercept() + pact.toHandler()
-      cy.pactIntercept('GET', `/api/todos?all=true`, {
-        description: 'get multiple todos',
-        response: {
-          status: 200,
-          body: [
-            {
-              id: '1',
-              title: 'Buy groceries',
-              description: 'Milk, bread, eggs, cheese',
-              completed: false,
-            },
-            {
-              id: '2',
-              title: 'Do laundry',
-              description: '',
-              completed: true,
-            },
-            {
-              id: '3',
-              title: 'Call plumber',
-              description: 'Fix leaky faucet in the bathroom',
-              completed: false,
-            },
-          ],
+      // SIMPLEST USAGE: Just pass the response body - works exactly like cy.intercept()
+      cy.pactIntercept('GET', `/api/todos?all=true`, [
+        {
+          id: '1',
+          title: 'Buy groceries',
+          description: 'Milk, bread, eggs, cheese',
+          completed: false,
         },
-      }).as('multipleTodos')
+        {
+          id: '2',
+          title: 'Do laundry',
+          description: '',
+          completed: true,
+        },
+        {
+          id: '3',
+          title: 'Call plumber',
+          description: 'Fix leaky faucet in the bathroom',
+          completed: false,
+        },
+      ]).as('multipleTodos')
 
       mount(<TodoList {...props} />)
 
@@ -65,7 +59,7 @@ describe('To-Do list Rest API client (Simplified API)', () => {
         return false // ignore
       })
 
-      // First request: technical failure
+      // ADVANCED USAGE: Custom interaction with description and provider state
       cy.pactIntercept('GET', '/api/todos?all=true', {
         providerState: 'will return a 500 http error',
         description: 'rest api returns a 500 http error',
@@ -81,14 +75,8 @@ describe('To-Do list Rest API client (Simplified API)', () => {
         .its('statusCode')
         .should('be.equal', 500)
 
-      // Second request: empty list
-      cy.pactIntercept('GET', '/api/todos?all=true', {
-        description: 'empty todo list',
-        response: {
-          status: 200,
-          body: [],
-        },
-      }).as('emptyTodos')
+      // SIMPLEST USAGE: Just pass empty array for empty response
+      cy.pactIntercept('GET', '/api/todos?all=true', []).as('emptyTodos')
 
       cy.get('#reload').click()
 
@@ -98,7 +86,30 @@ describe('To-Do list Rest API client (Simplified API)', () => {
 
   describe('createTodo', () => {
     it('should create a new To-Do item', () => {
-      // NEW: Direct interaction definition in cy.pactIntercept()
+      // SIMPLEST USAGE: Just pass the response body
+      cy.pactIntercept('POST', '/api/todos', {
+        id: '1',
+        title: 'Buy groceries',
+        description: 'Milk, bread, eggs, cheese',
+        completed: false,
+      }).as('createTodoWillSucceed')
+
+      mount(<CreateTodo {...props} />)
+      cy.get('#title')
+        .type('Go to groceries')
+        .get('#description')
+        .type('- Banana, Apple')
+        .get('#submit')
+        .click()
+
+      cy.wait('@createTodoWillSucceed')
+        .its('response')
+        .its('statusCode')
+        .should('be.equal', 200) // Default status is 200
+    })
+
+    it('should create a todo with custom status code', () => {
+      // ADVANCED USAGE: Custom status code
       cy.pactIntercept('POST', '/api/todos', {
         description: 'should create a Todo with success',
         response: {
@@ -129,6 +140,7 @@ describe('To-Do list Rest API client (Simplified API)', () => {
 
   describe('todoById', () => {
     it('should get a todo by its id', () => {
+      // ADVANCED USAGE: Custom interaction with provider state
       cy.pactIntercept('GET', '/api/todos/*', {
         description: 'should found a todo item by its id',
         providerState: 'there is an existing todo item with this id',
@@ -156,6 +168,7 @@ describe('To-Do list Rest API client (Simplified API)', () => {
         return false // ignore
       })
 
+      // ADVANCED USAGE: Custom error response
       cy.pactIntercept('GET', '/api/todos/*', {
         description: 'should not found a todo item by its id',
         response: {

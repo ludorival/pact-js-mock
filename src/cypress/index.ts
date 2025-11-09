@@ -9,6 +9,4 @@ import './setup'
 export { pactRegistry } from './registry'
 export { setupLifecycleHooks } from './lifecycle'
 export { withPact } from './config-helper'
-
-// Export plugin for manual setup (backward compatibility)
 export { default as pactPlugin } from './plugin'

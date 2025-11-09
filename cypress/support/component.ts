@@ -13,9 +13,6 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-// Import commands.js using ES2015 syntax:
-// For backward compatibility, import commands directly:
-import '../../src/cypress/commands'
-
-// For NEW simplified API with auto-setup, use:
-// import 'pact-js-mock/lib/cypress'
+// Import pact-js-mock Cypress integration (auto-setup)
+// This automatically registers commands and lifecycle hooks
+import 'pact-js-mock/lib/cypress'
