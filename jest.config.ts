@@ -5,12 +5,17 @@
 import type { Config } from 'jest'
 const config: Config = {
   clearMocks: true,
-  // Transform .ts and .tsx files with ts-jest
+  // Transform .ts, .tsx, .js and .jsx files with ts-jest so we can process ESM
   transform: {
-    '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.jest.json' }],
+    '^.+\\.[tj]sx?$': [
+      'ts-jest',
+      { tsconfig: 'tsconfig.jest.json', isolatedModules: true },
+    ],
   },
-  // Allow msw sources in node_modules to be transformed (otherwise they're ignored)
-  transformIgnorePatterns: ['/node_modules/(?!(msw)/)'],
+  // Allow msw and its ESM dependencies in node_modules to be transformed
+  transformIgnorePatterns: [
+    '/node_modules/(?!(msw|@mswjs|@open-draft|until-async)/)',
+  ],
   coverageDirectory: 'coverage',
   coverageThreshold: {
     global: {
