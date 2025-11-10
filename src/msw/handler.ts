@@ -104,7 +104,7 @@ function mergePactOptions<
   } as MinimalInteraction<InteractionFor<P, TResponse>>
 }
 
-// Helper to record Pact interaction asynchronously (non-blocking)
+// Helper to record Pact interaction
 async function recordPactInteraction(
   response: Response,
   info: Info,
@@ -197,8 +197,7 @@ export function wrapResolverWithPact<
       'headers' in response &&
       'json' in response
     ) {
-      // Record Pact interaction asynchronously without blocking
-      // Fire and forget - don't await to avoid blocking the response
+      // Record Pact interaction asynchronously
       await recordPactInteraction(
         response as Response,
         info as unknown as Info,
