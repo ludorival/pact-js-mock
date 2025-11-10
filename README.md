@@ -285,6 +285,29 @@ import 'pact-js-mock/lib/cypress'
 
 This registers the `cy.pactIntercept()` command and wires the lifecycle hooks that read existing pacts before tests and write the updated files afterwards.
 
+**TypeScript Setup:** The type declarations for `cy.pactIntercept()` are automatically included when you import the module. **Most projects won't need any tsconfig changes** - TypeScript automatically processes type declarations from `node_modules` when modules are imported.
+
+However, you **must ensure** your Cypress support file is included in your TypeScript compilation. Here's a minimal `tsconfig.json` for Cypress:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["cypress", "node"],
+    "moduleResolution": "node"
+  },
+  "include": ["cypress/**/*.ts", "cypress/**/*.tsx"]
+}
+```
+
+**Key points:**
+
+- ✅ The `include` array must contain your Cypress support files (where you import `pact-js-mock/lib/cypress`)
+- ✅ `types: ["cypress"]` ensures Cypress types are available (usually already configured)
+- ✅ `moduleResolution: "node"` is the default and allows TypeScript to resolve types from `node_modules`
+- ✅ No special path mappings or configuration needed - TypeScript automatically processes types from imported modules
+
+The global type augmentation will be available once you import `pact-js-mock/lib/cypress` in a file that TypeScript processes.
+
 ### 2. Register the plugin
 
 To persist pact files across runs, wire the Pact plugin in your Cypress configuration. The example below uses the classic `cypress/plugins/index.js` entry:
@@ -343,6 +366,99 @@ You can find complete examples under:
 
 - [REST component tests](./src/cypress/test/rest/rest.client.cy.tsx)
 - [GraphQL component tests](./src/cypress/test/graphql/graphql.client.cy.tsx)
+
+### Troubleshooting TypeScript Issues
+
+**Quick Answer:** Most projects don't need tsconfig changes. TypeScript automatically processes type declarations from `node_modules`. The only requirement is that your Cypress support file (where you import `pact-js-mock/lib/cypress`) must be included in your `tsconfig.json` `include` array.
+
+If TypeScript doesn't recognize `cy.pactIntercept()` in your project, try the following solutions:
+
+#### Solution 1: Ensure Your Support File is Included in tsconfig.json
+
+The most common issue is that the Cypress support file (where you import `pact-js-mock/lib/cypress`) is not included in your TypeScript compilation. Make sure your `tsconfig.json` includes your Cypress files:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["cypress", "node"],
+    "moduleResolution": "node"
+  },
+  "include": ["cypress/**/*.ts", "cypress/**/*.tsx"]
+}
+```
+
+**Important:** If you have a separate `cypress/tsconfig.json`, ensure it extends your main config or includes the support files:
+
+```json
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["cypress", "node"]
+  },
+  "include": ["../cypress/**/*.ts", "../cypress/**/*.tsx"]
+}
+```
+
+#### Solution 2: Verify the Import is in Your Support File
+
+Ensure you're importing `pact-js-mock/lib/cypress` in a file that's included in your TypeScript compilation. The import should be in your Cypress support file (e.g., `cypress/support/component.ts` or `cypress/support/e2e.ts`):
+
+```ts
+// cypress/support/component.ts or cypress/support/e2e.ts
+import 'pact-js-mock/lib/cypress'
+```
+
+#### Solution 3: Create a Type Declaration File (Advanced)
+
+If the above solutions don't work, you can create a type declaration file that explicitly imports the types:
+
+```ts
+// cypress/support/index.d.ts or cypress/support/e2e.d.ts
+import 'pact-js-mock/lib/cypress'
+```
+
+This ensures TypeScript processes the type declarations. Make sure this file is included in your `tsconfig.json`:
+
+```json
+{
+  "include": [
+    "cypress/**/*.ts",
+    "cypress/**/*.tsx",
+    "cypress/support/**/*.d.ts"
+  ]
+}
+```
+
+#### Solution 4: Check Module Resolution and skipLibCheck
+
+**Module Resolution:** If you're using a monorepo or have custom module resolution, ensure TypeScript can resolve the package. The default `moduleResolution: "node"` should work in most cases.
+
+**skipLibCheck:** If your `tsconfig.json` has `skipLibCheck: true` (common for performance), this is fine - it won't prevent types from being available. However, if you're still having issues, you can try temporarily setting it to `false` to see if it helps with type resolution.
+
+**Monorepo path mappings:** If you're in a monorepo and TypeScript can't resolve the package, you might need path mappings (though this is rarely necessary):
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "pact-js-mock/*": ["node_modules/pact-js-mock/lib/*"]
+    }
+  }
+}
+```
+
+The type declarations use global augmentation, so once the module is imported in a file that TypeScript processes, the `cy.pactIntercept()` command should be available throughout your Cypress tests.
+
+#### Solution 5: Verify TypeScript Version
+
+Ensure you're using a modern TypeScript version (4.1+). Older versions may have issues with global type augmentations from `node_modules`. You can check your version with:
+
+```bash
+npx tsc --version
+```
+
+If you're using an older version, consider updating to TypeScript 4.5+ for better support of type declarations from `node_modules`.
 
 ## Author
 
