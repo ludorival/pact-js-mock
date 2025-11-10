@@ -85,6 +85,9 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
             "title": "Call plumber",
           },
         ],
+        "headers": {
+          "content-type": "application/json",
+        },
         "status": 200,
       },
     },
@@ -99,11 +102,15 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
         "query": "all=true",
       },
       "response": {
+        "body": null,
+        "headers": {
+          "content-type": "application/json",
+        },
         "status": 500,
       },
     },
     {
-      "description": "empty todo list",
+      "description": "GET /todo-service/todos returns status 200 - 1",
       "request": {
         "body": null,
         "headers": {},
@@ -113,11 +120,14 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
       },
       "response": {
         "body": [],
+        "headers": {
+          "content-type": "application/json",
+        },
         "status": 200,
       },
     },
     {
-      "description": "should create a Todo with success",
+      "description": "POST /todo-service/todos returns status 201",
       "request": {
         "body": {
           "title": "Buy groceries",
@@ -136,6 +146,9 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
           "id": "1",
           "ownerId": "user-1",
           "title": "Buy groceries",
+        },
+        "headers": {
+          "content-type": "application/json",
         },
         "status": 201,
       },
@@ -158,11 +171,14 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
           "ownerId": "user-1",
           "title": "Buy groceries",
         },
+        "headers": {
+          "content-type": "application/json",
+        },
         "status": 200,
       },
     },
     {
-      "description": "should not found a todo item by its id",
+      "description": "GET /todo-service/todos/1 returns status 404",
       "request": {
         "body": null,
         "headers": {},
@@ -173,6 +189,9 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
       "response": {
         "body": {
           "message": "The todo item 1 is not found",
+        },
+        "headers": {
+          "content-type": "application/json",
         },
         "status": 404,
       },

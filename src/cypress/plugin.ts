@@ -1,5 +1,6 @@
+import { readPactConfigFile } from '../core/config'
 import { readPact } from '../utils'
-import type { PactEnvironmentConfig } from './types'
+import type { PactEnvironmentConfig } from '../types'
 
 const checkRead: Record<string, boolean> = {}
 
@@ -7,22 +8,35 @@ function mergePactEnv(
   config: Cypress.PluginConfigOptions,
   pactEnv?: PactEnvironmentConfig,
 ): Cypress.PluginConfigOptions {
-  if (!pactEnv) {
-    return config
-  }
+  // Read config from file (lowest priority)
+  const fileConfig = readPactConfigFile()
 
   const existingEnv = (config.env || {}) as Record<string, unknown>
   const existingPactEnv = (existingEnv.pact ||
     {}) as Partial<PactEnvironmentConfig>
 
+  // Merge in priority order: file config (lowest) -> existing env (middle) -> provided pactEnv (highest)
+  // Start with file config, then merge existing env (existing env takes precedence), then merge provided pactEnv (provided takes precedence)
+  const mergedPactEnv: PactEnvironmentConfig = {
+    ...fileConfig,
+    ...existingPactEnv,
+    ...(pactEnv || {}),
+    // Merge options with proper priority: file -> existing -> provided
+    options:
+      fileConfig.options || existingPactEnv.options || pactEnv?.options
+        ? {
+            ...(fileConfig.options || {}),
+            ...(existingPactEnv.options || {}),
+            ...(pactEnv?.options || {}),
+          }
+        : undefined,
+  }
+
   return {
     ...config,
     env: {
       ...existingEnv,
-      pact: {
-        ...existingPactEnv,
-        ...pactEnv,
-      },
+      pact: mergedPactEnv,
     },
   }
 }

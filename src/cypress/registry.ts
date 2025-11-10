@@ -1,7 +1,5 @@
 import { PactRegistry } from '../core'
 import { PactFile } from '../types'
-import { createConfiguredPact, Pact } from './pact'
+import { resolvePactEnvironment } from './runtime-config'
 
-export const pactRegistry = new PactRegistry<Pact<PactFile>>(
-  createConfiguredPact,
-)
+export const pactRegistry = new PactRegistry<PactFile>(resolvePactEnvironment())

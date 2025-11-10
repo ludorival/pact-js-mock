@@ -1,6 +1,5 @@
 import { setupServer } from 'msw/node'
 import {
-  pact,
   createTodoWillSucceed,
   emptyTodos,
   multipleTodos,
@@ -10,11 +9,12 @@ import {
 } from './handlers'
 import { createTodo, fetchTodos, todoById } from '../../../test/rest.client'
 import { omitVersion } from '../../../test/utils'
+import { pactRegistry } from '../../registry'
 
 const server = setupServer()
 
 beforeAll(() => {
-  pact.reset()
+  pactRegistry.clear()
   server.listen()
 })
 
@@ -103,6 +103,6 @@ describe('To-Do list Rest API client', () => {
   })
 })
 it('the pact file can be generated and match with the snapshot', () => {
-  const pactFile = pact.generatePactFile()
+  const pactFile = pactRegistry.getAll()[0].generatePactFile()
   expect(omitVersion(pactFile)).toMatchSnapshot()
 })

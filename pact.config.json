@@ -1,0 +1,11 @@
+{
+  "consumerName": "test-consumer",
+  "pactVersion": "2.0.0",
+  "options": {
+    "basePath": "/todo-service",
+    "headersConfig": {
+      "includes": ["content-type"]
+    }
+  }
+}
+

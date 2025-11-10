@@ -19,7 +19,9 @@ describe('To-Do list GraphQL API client', () => {
   describe('fetchTodos', () => {
     it('should fetch all To-Do items', () => {
       // use multipleTodos handlers from contracts
-      cy.pactIntercept('POST', `/graphql`, multipleTodos).as('multipleTodos')
+      cy.pactIntercept('POST', `/graphql`, multipleTodos, {
+        description: 'should list todo items using GraphQL',
+      }).as('multipleTodos')
 
       // Mount the TodoList to fetchTodos function and get the actual data
       mount(<TodoList {...props} />)
@@ -40,9 +42,10 @@ describe('To-Do list GraphQL API client', () => {
         return false // ignore
       })
       // use todosWillRaiseTechnicalFailure and emptyTodos handlers from contracts
-      cy.pactIntercept('POST', `/graphql`, todosWillRaiseTechnicalFailure).as(
-        'todosWillRaiseTechnicalFailure',
-      )
+      cy.pactIntercept('POST', `/graphql`, todosWillRaiseTechnicalFailure, {
+        description: 'graphql api returns a 500 http error',
+        providerState: 'will return a 500 http error',
+      }).as('todosWillRaiseTechnicalFailure')
       // Mount the TodoList to fetchTodos function and get the actual data
       mount(<TodoList {...props} />)
 
@@ -51,7 +54,9 @@ describe('To-Do list GraphQL API client', () => {
         .its('statusCode')
         .should('be.equal', 500)
 
-      cy.pactIntercept('POST', `/graphql`, emptyTodos).as('emptyTodos')
+      cy.pactIntercept('POST', `/graphql`, emptyTodos, {
+        description: 'empty todo list',
+      }).as('emptyTodos')
       // Reload the fetch
       cy.get('#reload').click()
 
@@ -65,9 +70,9 @@ describe('To-Do list GraphQL API client', () => {
   describe('createTodo', () => {
     it('should create a new To-Do item', () => {
       // use createTodoWillSucceed handlers from contracts
-      cy.pactIntercept('POST', `/graphql`, createTodoWillSucceed).as(
-        'createTodoWillSucceed',
-      )
+      cy.pactIntercept('POST', `/graphql`, createTodoWillSucceed, {
+        description: 'should create a Todo with success',
+      }).as('createTodoWillSucceed')
 
       // mount the CreateTodo and get the actual data
       mount(<CreateTodo {...props} />)
@@ -90,7 +95,10 @@ describe('To-Do list GraphQL API client', () => {
   describe('todoById', () => {
     it('should get a todo by its id', () => {
       // use todoByIdFound handlers from contracts
-      cy.pactIntercept('POST', `/graphql`, todoByIdFound).as('todoByIdFound')
+      cy.pactIntercept('POST', `/graphql`, todoByIdFound, {
+        description: 'should found a todo item by its id',
+        providerState: 'there is an existing todo item with this id',
+      }).as('todoByIdFound')
 
       // mount the TodoDetails and get the actual data
       mount(<TodoDetails id="1" {...props} />)
@@ -107,10 +115,10 @@ describe('To-Do list GraphQL API client', () => {
       Cypress.on('uncaught:exception', () => {
         return false // ignore
       })
-      // use todoByIdFound handlers from contracts
-      cy.pactIntercept('POST', `/graphql`, todoByIdNotFound).as(
-        'todoByIdNotFound',
-      )
+      // use todoByIdNotFound handlers from contracts
+      cy.pactIntercept('POST', `/graphql`, todoByIdNotFound, {
+        description: 'should not found a todo item by its id',
+      }).as('todoByIdNotFound')
 
       // mount the TodoDetails and get the actual data
       mount(<TodoDetails id="1" {...props} />)

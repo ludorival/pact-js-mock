@@ -53,6 +53,10 @@ describe('To-Do list Rest API client', () => {
         'GET',
         '/todo-service/todos?all=true',
         todosWillRaiseTechnicalFailure,
+        {
+          description: 'rest api returns a 500 http error',
+          providerState: 'will return a 500 http error',
+        },
       ).as('todosWillRaiseTechnicalFailure')
       // Mount the TodoList to fetchTodos function and get the actual data
       mount(<TodoList {...props} />)
@@ -63,9 +67,9 @@ describe('To-Do list Rest API client', () => {
         .its('statusCode')
         .should('be.equal', 500)
 
-      cy.pactIntercept('GET', '/todo-service/todos?all=true', emptyTodos).as(
-        'emptyTodos',
-      )
+      cy.pactIntercept('GET', '/todo-service/todos?all=true', emptyTodos, {
+        description: 'empty todo list',
+      }).as('emptyTodos')
       // Reload the fetch
       cy.get('#reload').click()
 
@@ -77,9 +81,9 @@ describe('To-Do list Rest API client', () => {
   describe('createTodo', () => {
     it('should create a new To-Do item', () => {
       // use createTodoWillSucceed handlers from contracts
-      cy.pactIntercept('POST', '/todo-service/todos', createTodoWillSucceed).as(
-        'createTodoWillSucceed',
-      )
+      cy.pactIntercept('POST', '/todo-service/todos', createTodoWillSucceed, {
+        description: 'should create a Todo with success',
+      }).as('createTodoWillSucceed')
 
       // mount the CreateTodo and get the actual data
       mount(<CreateTodo {...props} />)
@@ -101,12 +105,13 @@ describe('To-Do list Rest API client', () => {
   describe('todoById', () => {
     it('should get a todo by its id', () => {
       // use todoByIdFound handlers from contracts
-      cy.pactIntercept('GET', '/todo-service/todos/*', todoByIdFound).as(
-        'todoByIdFound',
-      )
-      cy.pactIntercept('GET', '/user-service/users/*', userByIdFound).as(
-        'userByIdFound',
-      )
+      cy.pactIntercept('GET', '/todo-service/todos/*', todoByIdFound, {
+        description: 'should found a todo item by its id',
+        providerState: 'there is an existing todo item with this id',
+      }).as('todoByIdFound')
+      cy.pactIntercept('GET', '/user-service/users/*', userByIdFound, {
+        description: 'should find the associated user',
+      }).as('userByIdFound')
 
       // mount the TodoDetails and get the actual data
       mount(<TodoDetails id="1" {...props} />)
@@ -125,10 +130,10 @@ describe('To-Do list Rest API client', () => {
       Cypress.on('uncaught:exception', () => {
         return false // ignore
       })
-      // use todoByIdFound handlers from contracts
-      cy.pactIntercept('GET', '/todo-service/todos/*', todoByIdNotFound).as(
-        'todoByIdNotFound',
-      )
+      // use todoByIdNotFound handlers from contracts
+      cy.pactIntercept('GET', '/todo-service/todos/*', todoByIdNotFound, {
+        description: 'should not found a todo item by its id',
+      }).as('todoByIdNotFound')
 
       // mount the TodoDetails and get the actual data
       mount(<TodoDetails id="1" {...props} />)

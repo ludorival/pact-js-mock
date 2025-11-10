@@ -5,16 +5,16 @@ import {
   createTodoWillSucceed,
   emptyTodos,
   multipleTodos,
-  pact,
   todoByIdFound,
   todoByIdNotFound,
   todosWillRaiseTechnicalFailure,
 } from './handlers'
+import { pactRegistry } from '../../registry'
 
 const server = setupServer()
 
 beforeAll(() => {
-  pact.reset()
+  pactRegistry.clear()
   server.listen()
 })
 
@@ -100,6 +100,6 @@ describe('To-Do list GraphQL API client', () => {
   })
 })
 it('the pact file can be generated and match with the snapshot', () => {
-  const pactFile = pact.generatePactFile()
+  const pactFile = pactRegistry.getAll()[0].generatePactFile()
   expect(omitVersion(pactFile)).toMatchSnapshot()
 })

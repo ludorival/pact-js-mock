@@ -58,7 +58,6 @@
     },
     {
       "description": "graphql api returns a 500 http error",
-      "operationName": "todos",
       "providerState": "will return a 500 http error",
       "response": {
         "status": 500
