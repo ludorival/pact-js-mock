@@ -1,4 +1,3 @@
-export * from './pact'
 export * from './handler'
 export { pactHttp } from './http'
 export { pactGraphql } from './graphql'
