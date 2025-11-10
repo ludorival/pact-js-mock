@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'fs'
 import { Pact } from './core'
+import { PactRegistry } from './core/registry'
 import { PactFile } from './types'
 import path from 'path'
 
@@ -29,4 +30,41 @@ export function writePact<P extends PactFile>(pact: Pact<P>): void {
   }
   const content = JSON.stringify(pact.generatePactFile(), null, 2)
   writeFileSync(filePath, content, 'utf-8')
+}
+
+export function deletePacts<P extends PactFile>(
+  registry: PactRegistry<P>,
+): void {
+  const pacts = registry.getAll()
+  pacts.forEach((pact) => {
+    deletePact(pact)
+  })
+}
+
+export function writePacts<P extends PactFile>(
+  registry: PactRegistry<P>,
+): void {
+  const pacts = registry.getAll()
+  pacts.forEach((pact) => {
+    writePact(pact)
+  })
+}
+
+export function reloadPacts<P extends PactFile>(
+  registry: PactRegistry<P>,
+): void {
+  const pacts = registry.getAll()
+  pacts.forEach((pact) => {
+    reloadPact(pact)
+  })
+}
+
+export function setCurrentSourceForPacts<P extends PactFile>(
+  registry: PactRegistry<P>,
+  source: string | undefined,
+): void {
+  const pacts = registry.getAll()
+  pacts.forEach((pact) => {
+    pact.setCurrentSource(source)
+  })
 }

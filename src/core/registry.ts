@@ -1,38 +1,58 @@
-export class PactRegistry<T> {
-  private readonly namedPacts = new Map<string, T>()
+import {
+  InputPact,
+  Options,
+  PactFile,
+  PactV2,
+  ResolvedPactEnvironment,
+} from '../types'
+import { Pact } from './pact'
 
-  constructor(private readonly factory: (name: string) => T) {}
+export class PactRegistry<T extends PactFile = PactV2.PactFile> {
+  private readonly namedPacts = new Map<string, Pact<T>>()
 
-  register(name: string, pact: T): void {
+  constructor(private readonly config: ResolvedPactEnvironment) {}
+
+  register(name: string, pact: Pact<T>): void {
     this.namedPacts.set(name, pact)
   }
 
-  get(name: string): T | null {
+  get(name: string): Pact<T> | null {
     return this.namedPacts.get(name) ?? null
   }
 
-  getOrCreate(name: string): T {
-    const existing = this.namedPacts.get(name)
+  getOrCreate(providerName: string, options?: Options): Pact<T> {
+    const existing = this.namedPacts.get(providerName)
     if (existing) {
       return existing
     }
 
-    if (!this.factory) {
-      throw new Error(
-        `No factory provided for PactRegistry. Unable to create pact for ${name}`,
-      )
+    const pactDefinition = {
+      consumer: { name: this.config.consumerName },
+      provider: { name: providerName },
+      metadata: {
+        pactSpecification: { version: this.config.pactVersion },
+      },
+    } as InputPact<T>
+
+    const pactOptions: Options | undefined = {
+      ...this.config.options,
+      ...options,
+      ...(this.config.outputDir ? { outputDir: this.config.outputDir } : {}),
     }
 
-    const pact = this.factory(name)
-    this.namedPacts.set(name, pact)
+    const pact = new Pact<T>(pactDefinition, pactOptions)
+    this.namedPacts.set(providerName, pact)
     return pact
   }
 
   clear(): void {
+    this.namedPacts.forEach((pact) => {
+      pact.reset()
+    })
     this.namedPacts.clear()
   }
 
-  getAll(): T[] {
+  getAll(): Pact<T>[] {
     return Array.from(this.namedPacts.values())
   }
 }

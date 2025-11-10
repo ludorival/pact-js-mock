@@ -52,3 +52,47 @@ export type HeadersConfig = {
   includes?: string[]
   excludes?: string[]
 }
+
+export interface PactEnvironmentConfig {
+  consumerName?: string
+  pactVersion?: Version
+  outputDir?: string
+  options?: Options
+}
+
+export interface ResolvedPactEnvironment {
+  consumerName: string
+  pactVersion: Version
+  outputDir?: string
+  options?: Options
+}
+
+/**
+ * Options for customizing Pact interaction metadata
+ */
+export interface PactInteractionOptions {
+  /**
+   * Description of the interaction
+   */
+  description?: string
+  /**
+   * Provider state (Pact V2 - string)
+   */
+  providerState?: string
+  /**
+   * Provider states (Pact V3/V4 - array or string)
+   */
+  providerStates?: PactV3.ProviderState[] | string
+  /**
+   * Matching rules for request/response (Pact V3/V4)
+   */
+  matchingRules?: PactV3.RequestMatchingRules | PactV4.InteractionMatchingRules
+  /**
+   * Generators for request/response (Pact V3/V4)
+   */
+  generators?: PactV3.RequestGenerators | PactV3.ResponseGenerators
+  /**
+   * Additional metadata
+   */
+  metadata?: Record<string, unknown>
+}

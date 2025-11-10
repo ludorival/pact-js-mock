@@ -1,1 +1,5 @@
-export * from './pact'
+export * from './handler'
+export { pactHttp } from './http'
+export { pactGraphql } from './graphql'
+export { pactRegistry } from './registry'
+export { HttpResponse } from 'msw'

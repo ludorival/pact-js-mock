@@ -65,7 +65,8 @@ export class Pact<T extends PactFile = PactV2.PactFile> {
     const interaction = {
       description,
       ...input,
-      request: { ...this.toRequest(request) },
+      ...(response ? { response: this.toResponse(response) } : {}),
+      ...(request ? { request: this.toRequest(request) } : {}),
     } as InteractionFor<T, TResponse, TRequest>
 
     const sameDescriptions = this.interactions.filter((i) =>
@@ -95,6 +96,22 @@ export class Pact<T extends PactFile = PactV2.PactFile> {
     } else {
       this.interactions.push(interaction)
     }
+  }
+
+  private toResponse<TResponse extends { status?: number }>(
+    res: TResponse,
+  ): TResponse {
+    return {
+      ...res,
+      ...('headers' in res && res.headers
+        ? {
+            headers: omitHeaders(
+              res.headers as unknown as HeaderType,
+              this.options?.headersConfig,
+            ),
+          }
+        : {}),
+    } as TResponse
   }
 
   private toRequest(req: Request): Request {

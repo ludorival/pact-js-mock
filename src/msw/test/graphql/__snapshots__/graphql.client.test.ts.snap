@@ -98,6 +98,9 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
             ],
           },
         },
+        "headers": {
+          "content-type": "application/json",
+        },
         "status": 200,
       },
     },
@@ -125,11 +128,15 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
         "query": undefined,
       },
       "response": {
+        "body": null,
+        "headers": {
+          "content-type": "application/json",
+        },
         "status": 500,
       },
     },
     {
-      "description": "empty todo list",
+      "description": "POST /graphql returns status 200 - 1",
       "request": {
         "body": {
           "cookies": {},
@@ -160,11 +167,14 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
             "todos": [],
           },
         },
+        "headers": {
+          "content-type": "application/json",
+        },
         "status": 200,
       },
     },
     {
-      "description": "should create a Todo with success",
+      "description": "POST /graphql returns status 200 - 1",
       "request": {
         "body": {
           "cookies": {},
@@ -202,12 +212,14 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
             },
           },
         },
+        "headers": {
+          "content-type": "application/json",
+        },
         "status": 200,
       },
     },
     {
-      "description": "should found a todo item by its id",
-      "providerState": "there is an existing todo item with this id",
+      "description": "POST /graphql returns status 200 - 1",
       "request": {
         "body": {
           "cookies": {},
@@ -245,11 +257,14 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
             },
           },
         },
+        "headers": {
+          "content-type": "application/json",
+        },
         "status": 200,
       },
     },
     {
-      "description": "should not found a todo item by its id",
+      "description": "POST /graphql returns status 200 - 1",
       "request": {
         "body": {
           "cookies": {},
@@ -284,6 +299,9 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
             },
           ],
         },
+        "headers": {
+          "content-type": "application/json",
+        },
         "status": 200,
       },
     },
@@ -297,7 +315,7 @@ exports[`the pact file can be generated and match with the snapshot 1`] = `
     },
   },
   "provider": {
-    "name": "graphql-provider",
+    "name": "graphql",
   },
 }
 `;

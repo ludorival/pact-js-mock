@@ -1,2 +1,1 @@
-export { Pact as PactMSW } from './msw'
-export { Pact as PactCypress } from './cypress'
+export { Pact } from './core'
