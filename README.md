@@ -285,46 +285,11 @@ import 'pact-js-mock/lib/cypress'
 
 This registers the `cy.pactIntercept()` command and wires the lifecycle hooks that read existing pacts before tests and write the updated files afterwards.
 
-**TypeScript Setup:** The type declarations for `cy.pactIntercept()` are automatically included when you import the module. **Most projects won't need any tsconfig changes** - TypeScript automatically processes type declarations from `node_modules` when modules are imported.
-
-However, you **must ensure** your Cypress support file is included in your TypeScript compilation. Here's a minimal `tsconfig.json` for Cypress:
-
-```json
-{
-  "compilerOptions": {
-    "types": ["cypress", "node"],
-    "moduleResolution": "node"
-  },
-  "include": ["cypress/**/*.ts", "cypress/**/*.tsx"]
-}
-```
-
-**Key points:**
-
-- ✅ The `include` array must contain your Cypress support files (where you import `pact-js-mock/lib/cypress`)
-- ✅ `types: ["cypress"]` ensures Cypress types are available (usually already configured)
-- ✅ `moduleResolution: "node"` is the default and allows TypeScript to resolve types from `node_modules`
-- ✅ No special path mappings or configuration needed - TypeScript automatically processes types from imported modules
-
-The global type augmentation will be available once you import `pact-js-mock/lib/cypress` in a file that TypeScript processes.
+> **Note:** If you are using TypeScript, make sure your `tsconfig.json` includes `["cypress/**/*.ts", "cypress/**/*.tsx"]`.
 
 ### 2. Register the plugin
 
 To persist pact files across runs, wire the Pact plugin in your Cypress configuration. The example below uses the classic `cypress/plugins/index.js` entry:
-
-```js
-// cypress/plugins/index.js
-const pactPlugin = require('pact-js-mock/lib/cypress/plugin').default
-
-module.exports = (on, config) => {
-  return pactPlugin(on, config, {
-    consumerName: 'web-app',
-    pactVersion: '4.0.0',
-  })
-}
-```
-
-If you're using the newer `setupNodeEvents` API inside `cypress.config.ts`, import the same plugin and return the value from `setupNodeEvents` instead.
 
 ```ts
 // cypress.config.ts
@@ -334,10 +299,7 @@ import pactPlugin from 'pact-js-mock/lib/cypress/plugin'
 export default defineConfig({
   e2e: {
     setupNodeEvents(on, config) {
-      return pactPlugin(on, config, {
-        consumerName: 'web-app',
-        pactVersion: '4.0.0',
-      })
+      return pactPlugin(on, config)
     },
   },
 })
@@ -367,98 +329,122 @@ You can find complete examples under:
 - [REST component tests](./src/cypress/test/rest/rest.client.cy.tsx)
 - [GraphQL component tests](./src/cypress/test/graphql/graphql.client.cy.tsx)
 
-### Troubleshooting TypeScript Issues
+### 4. Customization
 
-**Quick Answer:** Most projects don't need tsconfig changes. TypeScript automatically processes type declarations from `node_modules`. The only requirement is that your Cypress support file (where you import `pact-js-mock/lib/cypress`) must be included in your `tsconfig.json` `include` array.
+#### Plugin Configuration
 
-If TypeScript doesn't recognize `cy.pactIntercept()` in your project, try the following solutions:
-
-#### Solution 1: Ensure Your Support File is Included in tsconfig.json
-
-The most common issue is that the Cypress support file (where you import `pact-js-mock/lib/cypress`) is not included in your TypeScript compilation. Make sure your `tsconfig.json` includes your Cypress files:
-
-```json
-{
-  "compilerOptions": {
-    "types": ["cypress", "node"],
-    "moduleResolution": "node"
-  },
-  "include": ["cypress/**/*.ts", "cypress/**/*.tsx"]
-}
-```
-
-**Important:** If you have a separate `cypress/tsconfig.json`, ensure it extends your main config or includes the support files:
-
-```json
-{
-  "extends": "../tsconfig.json",
-  "compilerOptions": {
-    "types": ["cypress", "node"]
-  },
-  "include": ["../cypress/**/*.ts", "../cypress/**/*.tsx"]
-}
-```
-
-#### Solution 2: Verify the Import is in Your Support File
-
-Ensure you're importing `pact-js-mock/lib/cypress` in a file that's included in your TypeScript compilation. The import should be in your Cypress support file (e.g., `cypress/support/component.ts` or `cypress/support/e2e.ts`):
+You can customize the Pact plugin behavior by passing configuration options to the plugin in your `cypress.config.ts`:
 
 ```ts
-// cypress/support/component.ts or cypress/support/e2e.ts
-import 'pact-js-mock/lib/cypress'
+// cypress.config.ts
+import { defineConfig } from 'cypress'
+import pactPlugin from 'pact-js-mock/lib/cypress/plugin'
+
+export default defineConfig({
+  e2e: {
+    setupNodeEvents(on, config) {
+      return pactPlugin(on, config, {
+        consumerName: 'web-app',
+        pactVersion: '4.0.0',
+        outputDir: './pacts',
+        options: {
+          basePath: '/api',
+          headersConfig: {
+            includes: ['content-type', 'authorization'],
+          },
+        },
+      })
+    },
+  },
+})
 ```
 
-#### Solution 3: Create a Type Declaration File (Advanced)
+**Configuration options:**
 
-If the above solutions don't work, you can create a type declaration file that explicitly imports the types:
+- `consumerName` (optional): Name of the consumer service. Defaults to the value from `pact.config.json` or `'my-consumer'`.
+- `pactVersion` (optional): Pact specification version (`'2.0.0'`, `'3.0.0'`, or `'4.0.0'`). Defaults to `'2.0.0'`.
+- `outputDir` (optional): Directory where pact files will be written. Defaults to `'./pacts'`.
+- `options` (optional): Additional options:
+  - `basePath`: Base path that will be stripped from URLs when recording interactions
+  - `headersConfig`: Configuration for which headers to include/exclude in pact files:
+    - `includes`: Array of header names to include (all others will be excluded). Use this to whitelist specific headers.
+    - `excludes`: Array of header names to exclude (all others will be included). Use this to blacklist specific headers.
+    - Note: Use either `includes` or `excludes`, not both
+  - `ignoreConflict`: Whether to ignore conflicts when merging interactions
+
+**Configuration priority:** Options are merged in the following priority order (highest to lowest):
+
+1. Plugin configuration (passed to `pactPlugin`)
+2. Cypress environment variables (`Cypress.env('pact')`)
+3. `pact.config.json` file
+
+#### Command-Level Customization
+
+You can customize individual Pact interactions by passing `pactOptions` as the fourth parameter to `cy.pactIntercept()`:
 
 ```ts
-// cypress/support/index.d.ts or cypress/support/e2e.d.ts
-import 'pact-js-mock/lib/cypress'
+cy.pactIntercept(
+  'POST',
+  '/order-service/v1/order',
+  { statusCode: 201, body: { id: 123 } },
+  {
+    description: 'create a new order',
+    providerState: 'order service is available',
+    matchingRules: {
+      body: {
+        '$.id': { match: 'type' },
+      },
+    },
+  },
+)
 ```
 
-This ensures TypeScript processes the type declarations. Make sure this file is included in your `tsconfig.json`:
+**Pact interaction options:**
 
-```json
-{
-  "include": [
-    "cypress/**/*.ts",
-    "cypress/**/*.tsx",
-    "cypress/support/**/*.d.ts"
-  ]
-}
+- `description` (optional): Human-readable description of the interaction
+- `providerState` (optional): Provider state for Pact V2 (string)
+- `providerStates` (optional): Provider states for Pact V3/V4 (array of objects or string)
+- `matchingRules` (optional): Matching rules for request/response validation (Pact V3/V4)
+- `generators` (optional): Generators for dynamic data in request/response (Pact V3/V4)
+- `metadata` (optional): Additional metadata for the interaction
+
+**Examples:**
+
+```ts
+// Simple usage with description and provider state
+cy.pactIntercept(
+  'GET',
+  '/api/users/123',
+  { id: 123, name: 'John' },
+  {
+    description: 'get user by id',
+    providerState: 'user with id 123 exists',
+  },
+)
+
+// Advanced usage with matching rules (Pact V3/V4)
+cy.pactIntercept(
+  'POST',
+  '/api/orders',
+  { statusCode: 201, body: { id: 123, createdAt: '2024-01-01' } },
+  {
+    description: 'create order',
+    providerState: 'order service is available',
+    matchingRules: {
+      body: {
+        '$.id': { match: 'type' },
+        '$.createdAt': { match: 'regex', regex: '\\d{4}-\\d{2}-\\d{2}' },
+      },
+    },
+  },
+)
+
+// Usage with provider states array (Pact V3/V4)
+cy.pactIntercept('GET', '/api/products', [{ id: 1, name: 'Product' }], {
+  description: 'list products',
+  providerStates: [{ name: 'products exist', params: {} }],
+})
 ```
-
-#### Solution 4: Check Module Resolution and skipLibCheck
-
-**Module Resolution:** If you're using a monorepo or have custom module resolution, ensure TypeScript can resolve the package. The default `moduleResolution: "node"` should work in most cases.
-
-**skipLibCheck:** If your `tsconfig.json` has `skipLibCheck: true` (common for performance), this is fine - it won't prevent types from being available. However, if you're still having issues, you can try temporarily setting it to `false` to see if it helps with type resolution.
-
-**Monorepo path mappings:** If you're in a monorepo and TypeScript can't resolve the package, you might need path mappings (though this is rarely necessary):
-
-```json
-{
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "pact-js-mock/*": ["node_modules/pact-js-mock/lib/*"]
-    }
-  }
-}
-```
-
-The type declarations use global augmentation, so once the module is imported in a file that TypeScript processes, the `cy.pactIntercept()` command should be available throughout your Cypress tests.
-
-#### Solution 5: Verify TypeScript Version
-
-Ensure you're using a modern TypeScript version (4.1+). Older versions may have issues with global type augmentations from `node_modules`. You can check your version with:
-
-```bash
-npx tsc --version
-```
-
-If you're using an older version, consider updating to TypeScript 4.5+ for better support of type declarations from `node_modules`.
 
 ## Author
 
