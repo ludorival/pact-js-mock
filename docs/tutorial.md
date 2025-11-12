@@ -1,5 +1,7 @@
 # How to implement Contract Test with Pact by leveraging existing mocks
 
+![Skeptical Third World Kid Meme](https://media.makeameme.org/created/so-youre-telling-f00eddf902.jpg)
+
 > **🚀 Quick Start**: Want to jump straight to implementation? [Use AI to generate your contract tests](#-quick-start-use-ai-to-generate-your-contract-tests) - No need to read the full tutorial!
 
 ## Motivation: Why Leverage Existing Mocks? 🤔
