@@ -51,6 +51,8 @@ This tutorial demonstrates how to transform your existing test mocks into compre
 
 ### Using AI Agents for Quick Setup 🤖
 
+![Pampered Cat Meme - Me while AI works](https://media.makeameme.org/created/me-while-ai-8810f7091a.jpg)
+
 We've created detailed AI prompts that handle the conversion process for you. Use these with your AI coding assistant:
 
 **Frontend (JavaScript/TypeScript):**
