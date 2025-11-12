@@ -66,7 +66,7 @@ We've created a comprehensive prompt that handles the entire conversion process 
 
 This documentation will guide your AI assistant to:
 
-- Analyze your codebase (Maven/Gradle, Mockito/MockK, Java/Kotlin, etc.)
+- Analyze your codebase (Maven, MockK, Kotlin, etc.)
 - Convert your existing mocks to generate Pact consumer contracts (just annotate and swap a few method calls!)
 - Set up contract publishing to the Pact Broker
 - Update your CI/CD pipeline automatically
@@ -479,9 +479,43 @@ npm run pact:publish
 
 Check your Pact Broker - you should see your contract there! 🎊
 
+### Step 8: Check Deployment Readiness with `can-i-deploy` ✅
+
+Before deploying, it's crucial to verify that your contracts are compatible with all providers. The `can-i-deploy` command checks if it's safe to deploy a specific version of your application:
+
+```bash
+npm run pact:can-i-deploy
+```
+
+This command will:
+
+- Check if all contracts have been verified by their providers on the **main branch**
+- Ensure there are no breaking changes that would affect other services
+- Return a success status if deployment is safe, or fail if there are compatibility issues
+
+> **⚠️ Important Note About `can-i-deploy` on First Run:**
+>
+> When you publish your first contract and run `can-i-deploy` in CI, **it will fail** - and that's completely normal! 😊 Here's why:
+>
+> - The `can-i-deploy` check verifies that all contracts have been verified by their providers on the **main branch**
+> - On the first run, the provider hasn't verified the contract on main yet (you haven't implemented and merged provider verification tests!)
+> - This is expected behavior and not an error
+>
+> **To make `can-i-deploy` pass:**
+>
+> 1. Implement provider verification tests (see [Section 3: Implement Order Service Verifier](#3-implement-order-service-verifier-))
+> 2. Raise a PR in the provider service repository with the verification tests
+> 3. Review and merge the PR to the provider's main branch
+> 4. The provider's CI/CD pipeline will automatically run verification tests on main and publish results to the Pact Broker
+> 5. Once verification results are published from the provider's main branch, simply **re-run the consumer's CI job** - the `can-i-deploy` check will now pass! 🎉
+>
+> This is the beauty of contract testing - it ensures both sides are in sync on main before deployment! 🎯
+
 ## 3. Implement Order Service Verifier ✅
 
 > **🤖 AI Agent Prompt**: Want to automate provider verification setup? Use the [AGENTS_PROVIDER_VERIFICATION.md](https://github.com/ludorival/pact-jvm-mock/blob/main/docs/AGENTS_PROVIDER_VERIFICATION.md) prompt with your AI coding assistant to automatically create provider verification tests, configure Pact Broker integration, and update your CI/CD pipeline. The agent will handle the entire setup process for you!
+
+> **Reference Implementation**: See the complete working example in [order-service-pact-mock-demo](https://github.com/ludorival/order-service-pact-mock-demo/pull/13)
 
 Now let's make sure the order-service actually fulfills the contract. In the order-service project, create a Pact provider verification test. First, add the necessary dependencies:
 
@@ -509,13 +543,6 @@ Now let's make sure the order-service actually fulfills the contract. In the ord
     <version>4.6.4</version>
     <scope>test</scope>
 </dependency>
-```
-
-**Gradle (build.gradle.kts):**
-
-```kotlin
-testImplementation("au.com.dius.pact.provider:junit5:4.6.4")
-testImplementation("au.com.dius.pact.provider:spring:4.6.4")
 ```
 
 Create a provider verification test:
@@ -608,9 +635,16 @@ This test will:
 3. Verify that your application satisfies all consumer contracts (checking if you're keeping your promises)
 4. Publish verification results back to the broker (sharing the good news - or bad news, if something's broken 😅)
 
-## 4. Setup CI/CD Pipeline 🔄
+## 4. Setup CI/CD Pipeline for Provider Verification 🔄
 
-Time to automate everything (because manual work is so last decade)! Update your CI/CD pipeline to run tests and publish contracts. Here's a complete GitHub Actions workflow (copy-paste friendly):
+Now let's set up the CI/CD pipeline for the order-service provider to run verification tests. This ensures that verification tests run automatically on every push and pull request.
+
+**Important**: Make sure to add the following secrets to your GitHub repository (Settings → Secrets and variables → Actions):
+
+- `PACT_BROKER_BASE_URL`: Your Pact Broker URL (e.g., `https://your-org.pactflow.io`)
+- `PACT_BROKER_TOKEN`: Your Pact Broker API token (keep it secret, keep it safe! 🔐)
+
+Create a GitHub Actions workflow file:
 
 ```yaml:.github/workflows/main.yml
 name: CI/CD
@@ -626,75 +660,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
         with:
-          node-version: '18'
-          cache: 'npm'
+          java-version: '17'
+          distribution: 'temurin'
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests
-        run: npm test
-        env:
-          GIT_COMMIT: ${{ github.sha }}
-
-      - name: Publish Pact contracts
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: npm run pact:publish
-        env:
-          PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
-          PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
-          GIT_COMMIT: ${{ github.sha }}
-
-      - name: Check if can deploy
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: npm run pact:can-i-deploy
+      - name: Build and Test (includes provider verification)
+        run: ./mvnw verify
         env:
           PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
           PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
           GIT_COMMIT: ${{ github.sha }}
 ```
 
-**Important**: Make sure to add the following secrets to your GitHub repository (Settings → Secrets and variables → Actions):
+This pipeline will:
 
-- `PACT_BROKER_BASE_URL`: Your Pact Broker URL (e.g., `https://your-org.pactflow.io`)
-- `PACT_BROKER_TOKEN`: Your Pact Broker API token (keep it secret, keep it safe! 🔐)
-
-This ensures that:
-
-1. Tests run on every push and pull request
-2. Contracts are published to the broker after successful tests on main branch
-3. Deployment is blocked if contracts are incompatible with provider services
+1. **Run verification tests**: Execute the provider verification tests created in [Section 3](#3-implement-order-service-verifier-)
+2. **Fetch contracts**: Automatically fetch contracts from the Pact Broker for verification
+3. **Publish verification results**: Automatically publish verification results back to the Pact Broker (configured via `pact.verifier.publishResults=true` in `application.properties`)
 
 ## 5. Publish Contract between order-service and inventory-service 🔗
 
-> **🤖 AI Agent Prompt**: Want to automate this migration? Use the [AGENTS_CONSUMER.md](https://github.com/ludorival/pact-jvm-mock/blob/main/docs/AGENTS_CONSUMER.md) prompt with your AI coding assistant (Copilot, Cursor, etc.) to automatically convert your existing MockK or Mockito mocks to generate Pact consumer contracts. The agent will handle the entire migration process for JVM-based backend services!
+> **🤖 AI Agent Prompt**: Want to automate this migration? Use the [AGENTS_CONSUMER.md](https://github.com/ludorival/pact-jvm-mock/blob/main/docs/AGENTS_CONSUMER.md) prompt with your AI coding assistant (Copilot, Cursor, etc.) to automatically convert your existing MockK mocks to generate Pact consumer contracts. The agent will handle the entire migration process for JVM-based backend services!
 
 > **Reference Implementation**: See the complete working example in [order-service-pact-mock-demo](https://github.com/ludorival/order-service-pact-mock-demo/pull/14)
 
-Now let's do the same thing for the backend services! This time we're working with Kotlin/Java, but the concept is the same - convert your existing mocks to generate contracts.
+Now let's do the same thing for the backend services! This time we're working with Kotlin, but the concept is the same - convert your existing mocks to generate contracts.
 
 ### Step 1: Install Dependencies 📦
 
-Add `pact-jvm-mock` dependencies to your `build.gradle.kts` or `pom.xml`. The library supports both MockK and Mockito (pick your favorite, we don't judge!):
-
-**Gradle (build.gradle.kts):**
-
-```kotlin
-// For MockK
-testImplementation("io.github.ludorival:pact-jvm-mock-mockk:1.4.0")
-
-// OR for Mockito
-testImplementation("io.github.ludorival:pact-jvm-mock-mockito:1.4.0")
-
-// For Spring RestTemplate support
-testImplementation("io.github.ludorival:pact-jvm-mock-spring:1.4.0")
-```
+Add `pact-jvm-mock` dependencies to your `pom.xml`:
 
 **Maven (pom.xml):**
 
@@ -703,14 +701,6 @@ testImplementation("io.github.ludorival:pact-jvm-mock-spring:1.4.0")
 <dependency>
     <groupId>io.github.ludorival</groupId>
     <artifactId>pact-jvm-mock-mockk</artifactId>
-    <version>1.4.0</version>
-    <scope>test</scope>
-</dependency>
-
-<!-- OR for Mockito -->
-<dependency>
-    <groupId>io.github.ludorival</groupId>
-    <artifactId>pact-jvm-mock-mockito</artifactId>
     <version>1.4.0</version>
     <scope>test</scope>
 </dependency>
@@ -726,9 +716,7 @@ testImplementation("io.github.ludorival:pact-jvm-mock-spring:1.4.0")
 
 ### Step 2: Configure Pact ⚙️
 
-Time to configure Pact! Create a `PactConfiguration` object to define your consumer and provider names. This is typically done as a Kotlin object or Java class:
-
-**Kotlin:**
+Time to configure Pact! Create a `PactConfiguration` object to define your consumer and provider names:
 
 ```kotlin:src/test/kotlin/com/example/orderservice/pact/InventoryServicePactConfig.kt
 import io.github.ludorival.pactjvm.mock.PactConfiguration
@@ -745,87 +733,34 @@ object InventoryServicePactConfig : PactConfiguration(
 
 **Note**: The consumer name is typically inferred from your project name or can be configured via system properties. Check the [pact-jvm-mock documentation](https://github.com/ludorival/pact-jvm-mock) for consumer name configuration options.
 
-**Java:**
+### Step 3: Convert Existing MockK Tests 🔄
 
-```java:src/test/java/com/example/orderservice/pact/InventoryServicePactConfig.java
-import io.github.ludorival.pactjvm.mock.PactConfiguration;
-import io.github.ludorival.pactjvm.mock.spring.SpringRestTemplateMockAdapter;
+Here's the fun part! `pact-jvm-mock` works with existing MockK mocks. Here's how to convert your existing tests (spoiler: it's easier than you think):
 
-public class InventoryServicePactConfig extends PactConfiguration {
-    public InventoryServicePactConfig() {
-        super("inventory-service", new SpringRestTemplateMockAdapter());
-    }
-}
-```
-
-### Step 3: Convert Existing Mockito/MockK Tests 🔄
-
-Here's the fun part! `pact-jvm-mock` works with existing Mockito or MockK mocks. Here's how to convert your existing tests (spoiler: it's easier than you think):
-
-**Before (Existing Test with Mockito):**
+**Before (Existing Test with MockK):**
 
 ```kotlin:src/test/kotlin/com/example/orderservice/service/InventoryClientTest.kt
-@ExtendWith(MockitoExtension::class)
-class InventoryClientTest {
-
-    @Mock
-    lateinit var restTemplate: RestTemplate
-
-    @InjectMocks
-    lateinit var inventoryClient: InventoryClient
-
-    @Test
-    fun `should check product availability`() {
-        val productId = "12345"
-        val expectedResponse = ProductAvailability(productId, 42)
-
-        `when`(restTemplate.getForEntity(
-            eq("http://inventory-service/inventory/products/$productId"),
-            eq(ProductAvailability::class.java)
-        )).thenReturn(ResponseEntity.ok(expectedResponse))
-
-        val result = inventoryClient.checkAvailability(productId)
-
-        assertThat(result.quantity).isEqualTo(42)
-    }
-}
-```
-
-**After (With Pact Contract Generation using Mockito):**
-
-```kotlin:src/test/kotlin/com/example/orderservice/service/InventoryClientTest.kt
-import io.github.ludorival.pactjvm.mock.mockito.EnablePactMock
-import io.github.ludorival.pactjvm.mock.mockito.PactMockito.uponReceiving
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.eq
+import io.mockk.every
+import io.mockk.mockk
 import org.springframework.http.ResponseEntity
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.junit.jupiter.MockitoExtension
-import org.mockito.Mock
-import org.mockito.InjectMocks
 
-@ExtendWith(MockitoExtension::class)
-@EnablePactMock(InventoryServicePactConfig::class)
 class InventoryClientTest {
 
-    @Mock
-    lateinit var restTemplate: RestTemplate
-
-    @InjectMocks
-    lateinit var inventoryClient: InventoryClient
+    private val restTemplate = mockk<RestTemplate>()
+    private val inventoryClient = InventoryClient(restTemplate)
 
     @Test
     fun `should check product availability`() {
         val productId = "12345"
         val expectedResponse = ProductAvailability(productId, 42)
 
-        uponReceiving(
+        every {
             restTemplate.getForEntity(
-                any(String::class.java),
-                eq(ProductAvailability::class.java)
+                "http://inventory-service/inventory/products/$productId",
+                ProductAvailability::class.java
             )
-        ).thenReturn(ResponseEntity.ok(expectedResponse))
+        } returns ResponseEntity.ok(expectedResponse)
 
         val result = inventoryClient.checkAvailability(productId)
 
@@ -834,7 +769,7 @@ class InventoryClientTest {
 }
 ```
 
-**Alternative: Using MockK (Kotlin DSL):**
+**After (With Pact Contract Generation using MockK):**
 
 ```kotlin:src/test/kotlin/com/example/orderservice/service/InventoryClientTest.kt
 import io.github.ludorival.pactjvm.mock.mockk.EnablePactMock
@@ -869,8 +804,6 @@ class InventoryClientTest {
 
 You can customize the interaction description and add provider states:
 
-**Kotlin (MockK):**
-
 ```kotlin
 uponReceiving {
     restTemplate.getForEntity(any<String>(), ProductAvailability::class.java)
@@ -879,42 +812,41 @@ uponReceiving {
 } returns ResponseEntity.ok(expectedResponse)
 ```
 
-**Java (Mockito):**
-
-```java
-uponReceiving(restTemplate.getForEntity(any(String.class), eq(ProductAvailability.class)))
-    .withDescription("Get product availability by product ID")
-    .given(builder -> builder.state("product exists in inventory"))
-    .thenReturn(ResponseEntity.ok(expectedResponse));
-```
-
 ### How It Works 🧙
 
 The `pact-jvm-mock` library is pretty clever:
 
 - Annotate your test class with `@EnablePactMock(PactConfiguration::class)` to enable Pact recording
-- Replaces your existing Mockito/MockK mocks with `uponReceiving()` (just swap the method calls!)
+- Replaces your existing MockK mocks with `uponReceiving()` (just swap the method calls!)
 - Records all HTTP interactions made through Spring's `RestTemplate` (it's watching... 👀)
 - Generates Pact contract files in `src/test/resources/pacts` by default
 - Uses the test name as the interaction description (or custom description if provided)
-- Maintains your existing test structure - just annotate the class and use `uponReceiving()` instead of `when()`/`every()`
+- Maintains your existing test structure - just annotate the class and use `uponReceiving()` instead of `every()`
 
 ### Key Benefits 🎁
 
 1. **Minimal changes**: Your test logic remains the same (no need to rewrite everything!)
-2. **Familiar API**: Uses Mockito/MockK patterns you already know (no learning curve here)
+2. **Familiar API**: Uses MockK patterns you already know (no learning curve here)
 3. **Automatic contract generation**: Contracts are created automatically when tests run (set it and forget it)
 4. **Spring integration**: Works seamlessly with Spring's `RestTemplate`
 
 For more advanced features like custom ObjectMapper, matching rules, and error handling, refer to the [pact-jvm-mock documentation](https://github.com/ludorival/pact-jvm-mock). There's always more to learn! 📚
 
-### Step 5: Publish Contracts to Pact Broker 📤
+### Step 5: Run Tests and Generate Contracts 🏃
 
-After running your tests, Pact contract files will be generated in `src/test/resources/pacts` . To publish them to the Pact Broker, add a Maven or Gradle task:
+Time to see the magic happen! When you run your tests, Pact contracts will be automatically generated (no extra steps needed):
 
-**Maven (pom.xml):**
+```bash
+./mvnw test
+```
 
-```xml
+After running tests, you'll find the generated Pact contract files in `src/test/resources/pacts/` (e.g., `order-service-inventory-service.json`). The contracts are created automatically based on the interactions recorded during your test execution.
+
+### Step 6: Publish Contracts to Pact Broker 📤
+
+Now let's share our contracts with the Pact Broker! To publish them, add the Pact Maven plugin to your `pom.xml`:
+
+```xml:pom.xml
 <plugin>
     <groupId>au.com.dius.pact.provider</groupId>
     <artifactId>maven</artifactId>
@@ -928,32 +860,78 @@ After running your tests, Pact contract files will be generated in `src/test/res
 </plugin>
 ```
 
-**Gradle (build.gradle.kts):**
-
-```kotlin
-plugins {
-    id("au.com.dius.pact") version "4.6.4"
-}
-
-pact {
-    publish {
-        pactDirectory = "src/test/resources/pacts"
-        pactBrokerUrl = System.getenv("PACT_BROKER_BASE_URL") ?: ""
-        pactBrokerToken = System.getenv("PACT_BROKER_TOKEN") ?: ""
-        consumerVersion = System.getenv("GIT_COMMIT") ?: "local"
-    }
-}
-```
-
-Then publish contracts with:
+After running tests and generating contracts, publish them to the Pact Broker:
 
 ```bash
-# Maven
 ./mvnw pact:publish
-
-# Gradle
-./gradlew pactPublish
 ```
+
+Check your Pact Broker - you should see your contract there! 🎊
+
+### Step 7: Setup CI/CD Pipeline for Backend Consumer 🔄
+
+Now let's set up the CI/CD pipeline for the order-service consumer. This pipeline will run tests, generate contracts, publish them to the Pact Broker, and check deployment readiness.
+
+**Important**: Make sure to add the following secrets to your GitHub repository (Settings → Secrets and variables → Actions):
+
+- `PACT_BROKER_BASE_URL`: Your Pact Broker URL (e.g., `https://your-org.pactflow.io`)
+- `PACT_BROKER_TOKEN`: Your Pact Broker API token (keep it secret, keep it safe! 🔐)
+
+Create a GitHub Actions workflow file:
+
+```yaml:.github/workflows/main.yml
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Pact CLI
+        run: npm install -g @pact-foundation/pact-cli
+
+      - name: Run tests and generate contracts
+        run: ./mvnw test
+        env:
+          GIT_COMMIT: ${{ github.sha }}
+
+      - name: Publish contracts to Pact Broker
+        run: ./mvnw pact:publish
+        env:
+          PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
+          PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
+          GIT_COMMIT: ${{ github.sha }}
+
+      - name: Check if deployment is safe
+        run: pact-broker can-i-deploy --broker-base-url=${{ secrets.PACT_BROKER_BASE_URL }} --broker-token=${{ secrets.PACT_BROKER_TOKEN }} --pacticipant=order-service --version=${{ github.sha }}
+```
+
+This pipeline will:
+
+1. **Run tests**: Execute tests which generate Pact contracts
+2. **Publish contracts**: Upload generated contracts to the Pact Broker
+3. **Check deployment readiness**: Verify that all contracts are verified before allowing deployment
+
+> **💡 Note**: The `can-i-deploy` step will fail on the first run until the provider (inventory-service) implements and merges verification tests. This is expected behavior! See the note in [Step 8](#step-8-check-deployment-readiness-with-can-i-deploy-) for details on making `can-i-deploy` pass.
 
 ## 6. Implement Inventory Service Verifier ✅
 
@@ -999,7 +977,7 @@ class InventoryServiceContractTest {
 
 ## 7. Setup CI/CD Pipeline for Backend Services 🔄
 
-Let's automate the backend services too! Update the CI/CD pipeline for both order-service and inventory-service:
+The inventory-service is a **provider**, so it only needs to run verification tests (no contract publishing, no `can-i-deploy`):
 
 ```yaml:.github/workflows/main.yml
 name: CI/CD
@@ -1023,40 +1001,17 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build and Test
+      - name: Build and Test (includes provider verification)
         run: ./mvnw verify
         env:
           PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
           PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
           GIT_COMMIT: ${{ github.sha }}
-
-      - name: Publish Pact contracts
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          ./mvnw pact:publish
-        env:
-          PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
-          PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
-          GIT_COMMIT: ${{ github.sha }}
-
-      - name: Can I Deploy?
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          curl -LO https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v1.88.3/pact-1.88.3-linux-x86_64.tar.gz
-          tar xzf pact-1.88.3-linux-x86_64.tar.gz
-          ./pact/bin/pact-broker can-i-deploy \
-            --broker-base-url="${PACT_BROKER_BASE_URL}" \
-            --broker-token="${PACT_BROKER_TOKEN}" \
-            --pacticipant="${PACTICIPANT}" \
-            --version="${GITHUB_SHA}"
-        env:
-          PACT_BROKER_BASE_URL: ${{ secrets.PACT_BROKER_BASE_URL }}
-          PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
-          PACTICIPANT: ${{ github.event.repository.name }}
-          GIT_COMMIT: ${{ github.sha }}
 ```
 
-**Note**: For Maven projects, you may need to add the Pact Maven plugin to publish contracts:
+> **Note**: Providers don't publish contracts or run `can-i-deploy` - they only verify contracts from the Pact Broker. The verification results are automatically published back to the broker by the Pact JVM provider framework.
+
+**Note**: For Maven projects, you may need to add the Pact Maven plugin to publish contracts (consumers only):
 
 ```xml:pom.xml
 <plugin>
@@ -1169,8 +1124,9 @@ Remember: you don't have to do everything at once. Start small, iterate, and exp
 Need to see it in action? Complete working examples with pull requests are available on GitHub (no fake code here!):
 
 - **[shop-pact-mock-frontend - PR #10](https://github.com/ludorival/shop-pact-mock-frontend/pull/10)**: Frontend React application demonstrating Cypress tests with `pact-js-mock` (converts `cy.intercept()` to `cy.pactIntercept()` for contract generation)
-- **[order-service-pact-mock-demo - PR #14](https://github.com/ludorival/order-service-pact-mock-demo/pull/14)**: Spring Boot service demonstrating MockK/Mockito tests with `pact-jvm-mock` (converts existing mocks to generate consumer contracts)
-- **[inventory-service-pact-mock-demo - PR #4](https://github.com/ludorival/inventory-service-pact-mock-demo/pull/4)**: Spring Boot service demonstrating provider verification tests (verifies contracts from Pact Broker)
+- **[order-service-pact-mock-demo - PR #14](https://github.com/ludorival/order-service-pact-mock-demo/pull/14)**: Spring Boot service demonstrating MockK tests with `pact-jvm-mock` (converts existing mocks to generate consumer contracts)
+- **[order-service-pact-mock-demo - PR #13](https://github.com/ludorival/order-service-pact-mock-demo/pull/13)**: Spring Boot service demonstrating provider verification tests with Pact Broker integration (verifies contracts from Pact Broker for order-service)
+- **[inventory-service-pact-mock-demo - PR #4](https://github.com/ludorival/inventory-service-pact-mock-demo/pull/4)**: Spring Boot service demonstrating provider verification tests (verifies contracts from Pact Broker for inventory-service)
 
 These pull requests provide:
 

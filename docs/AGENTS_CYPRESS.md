@@ -272,20 +272,43 @@ Update `pact.config.json` or `cypress.config.ts` plugin config:
   - `GIT_BRANCH`: Git branch name
 - If custom `outputDir` in pact.config.json, update script path from `./pacts`
 
-## 7. Update CI/CD Pipeline
+## 7. Setup Can-I-Deploy Check
+
+- Add to package.json scripts (after pact:publish):
+  ```json
+  {
+    "scripts": {
+      "pact:publish": "pact-broker publish ./pacts --broker-base-url=$PACT_BROKER_BASE_URL --broker-token=$PACT_BROKER_TOKEN --consumer-app-version=$GIT_COMMIT --branch=$GIT_BRANCH",
+      "pact:can-i-deploy": "pact-broker can-i-deploy --pacticipant <consumer-name> --version $GIT_COMMIT --to <environment> --broker-base-url=$PACT_BROKER_BASE_URL --broker-token=$PACT_BROKER_TOKEN"
+    }
+  }
+  ```
+- Replace `<consumer-name>` with your consumer name (from pact.config.json or package.json)
+- Replace `<environment>` with target deployment environment (e.g., `production`, `staging`, `main`)
+- Environment variables (same as publishing):
+  - `PACT_BROKER_BASE_URL`: Pact Broker URL
+  - `PACT_BROKER_TOKEN`: Authentication token (if required)
+  - `GIT_COMMIT`: Git commit SHA
+- **Usage**: Run `pact:can-i-deploy` before deployment to verify all provider contracts are verified
+- **When to use**: On main/master/release branches before deployment to production/staging
+- **What it checks**: Verifies that all pacts for the consumer version have been verified by providers, preventing deployment of breaking changes
+
+## 8. Update CI/CD Pipeline
 
 - Detect existing pipeline (GitHub Actions, Jenkins, GitLab CI, Azure DevOps, CircleCI, etc.)
 - Add steps to:
   - Run tests to generate contracts
   - **Publish contracts after successful tests on ALL branches** using `npm run pact:publish`
-  - Optionally add can-i-deploy check before deployment (main/master/release branches only)
+  - **Add can-i-deploy check after publishing on main/master/release branches** using `npm run pact:can-i-deploy` before deployment
 - Set environment variables in pipeline:
   - `PACT_BROKER_BASE_URL`, `PACT_BROKER_TOKEN`
   - `GIT_COMMIT` (usually `$GITHUB_SHA`, `$CI_COMMIT_SHA`, etc.)
   - `GIT_BRANCH` (usually `$GITHUB_REF_NAME`, `$CI_COMMIT_REF_NAME`, etc.)
-- **Important**: Publish contracts on every branch where tests run, not just on merge to main
+- **Important**:
+  - Publish contracts on every branch where tests run, not just on merge to main
+  - Run can-i-deploy check after publishing and before deployment on main/master/release branches only
 
-## 8. PR Description
+## 9. PR Description
 
 Include:
 
@@ -293,11 +316,11 @@ Include:
 - **What changed**: Files modified (test files, configs), `cy.intercept()` → `cy.pactIntercept()` (with provider states added for all interactions using parameters for reusability), new files (pact.config.json, cypress.config.ts updates), dependencies added
 - **How it works**: Contracts generated automatically, written to `./pacts/`, provider names inferred from URLs, provider states included for all interactions with parameters for reusability, all tests work unchanged
 - **Testing**: All tests pass, contracts generated successfully
-- **Next steps**: Set up Pact Broker env vars, configure publishing in CI/CD, review provider states for reusability, customize as needed
+- **Next steps**: Set up Pact Broker env vars, configure publishing in CI/CD, configure can-i-deploy check for deployment gates, review provider states for reusability, customize as needed
 - **Breaking changes**: None
 - **Configuration**: pact.config.json optional, sensible defaults used
 
-## 9. Key Points
+## 10. Key Points
 
 - **Cypress**: Use `cy.pactIntercept()` instead of `cy.intercept()`. Lifecycle is automatic.
 - **Configuration**: pact.config.json optional, sensible defaults used.
@@ -310,7 +333,7 @@ Proceed with analysis and conversion. Ask for clarification if information is mi
 
 **Note**: Instructions are complete and self-contained. Only refer to README.md if encountering unexpected issues.
 
-## 10. Generated Contract Files
+## 11. Generated Contract Files
 
 **Contract files are generated at the following path (share this path with your provider team):**
 
