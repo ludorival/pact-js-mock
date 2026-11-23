@@ -6,7 +6,7 @@
       "groupName": "Upgrade everything",
       "groupSlug": "upgrade-everything",
       "automerge": true,
-      "matchPackageNames": ["*", "!msw"]
+      "matchPackageNames": ["!msw"]
     }
   ]
 }
